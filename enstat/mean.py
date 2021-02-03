@@ -1,5 +1,38 @@
 import numpy as np
 
+class Scalar:
+
+    def __init__(self):
+
+        self.first = 0
+        self.second = 0
+        self.norm = 0
+
+    def add_sample(self, data):
+
+        self.first += np.sum(data.ravel())
+        self.second += np.sum(data.ravel() ** 2.0)
+        self.norm += data.size
+
+    def mean(self):
+
+        if self.norm == 0:
+            return 0
+
+        return self.first / self.norm
+
+    def variance(self):
+
+        if self.norm == 0:
+            return 0
+
+        return (self.second / self.norm - (self.first / self.norm) ** 2) * self.norm / (self.norm - 1)
+
+    def std(self):
+
+        return np.sqrt(self.variance())
+
+
 def _expand_array1d(data, size):
 
     tmp = np.zeros((size), data.dtype)
