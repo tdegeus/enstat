@@ -33,6 +33,39 @@ class Scalar:
         return np.sqrt(self.variance())
 
 
+class Static:
+
+    def __init__(self, shape=None, dtype=None):
+
+        self.first = None
+        self.norm = None
+        self.shape = shape
+        self.dtype = dtype
+
+    def _allocate(self, data):
+
+        if self.first is not None:
+            assert data.shape == self.shape
+            return
+
+        self.shape = self.shape if self.shape is not None else data.shape
+        self.dtype = self.dtype if self.dtype is not None else data.dtype
+
+        self.first = np.zeros(self.shape, self.dtype)
+        self.norm = np.zeros(self.shape, np.int64)
+
+    def add_sample(self, data):
+
+        self._allocate(data)
+
+        self.first += data
+        self.norm += 1
+
+    def mean(self):
+
+        return self.first / np.where(self.norm > 0, self.norm, 1)
+
+
 def _expand_array1d(data, size):
 
     tmp = np.zeros((size), data.dtype)
@@ -44,6 +77,7 @@ class Dynamic1d:
     def __init__(self, size=None, dtype=None):
 
         self.first = None
+        self.norm = None
         self.size = size
         self.dtype = dtype
 

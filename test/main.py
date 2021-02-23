@@ -16,6 +16,19 @@ class Test_mean(unittest.TestCase):
         self.assertTrue(np.isclose(average.mean(), np.mean(a)))
         self.assertTrue(np.isclose(average.std(), np.std(a), rtol=1e-3))
 
+
+    def test_Static(self):
+
+        average = enstat.mean.Static()
+
+        a = np.random.random(35 * 50 * 20).reshape(35, 50, 20)
+
+        for i in range(a.shape[0]):
+            average.add_sample(a[i, :, :])
+
+        self.assertTrue(np.allclose(average.mean(), np.mean(a, axis=0)))
+
+
     def test_Dynamic1d(self):
 
         average = enstat.mean.Dynamic1d()
@@ -25,6 +38,7 @@ class Test_mean(unittest.TestCase):
         average.add_sample(np.array([1]))
 
         self.assertTrue(np.allclose(average.mean(), np.array([1, 2, 3])))
+
 
 if __name__ == '__main__':
 
