@@ -17,9 +17,9 @@ class Test_mean(unittest.TestCase):
         self.assertTrue(np.isclose(average.std(), np.std(a), rtol=1e-3))
 
 
-    def test_Static(self):
+    def test_StaticNd(self):
 
-        average = enstat.mean.Static()
+        average = enstat.mean.StaticNd()
 
         a = np.random.random(35 * 50 * 20).reshape(35, 50, 20)
 

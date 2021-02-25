@@ -2,14 +2,8 @@
 from setuptools import setup
 from setuptools import find_packages
 
-import re
-
-filepath = 'enstat/__init__.py'
-__version__ = re.findall(r'__version__ = \'(.*)\'', open(filepath).read())[0]
-
 setup(
     name = 'enstat',
-    version = __version__,
     license = 'MIT',
     author = 'Tom de Geus',
     author_email = 'tom@geus.me',
@@ -18,4 +12,6 @@ setup(
     keywords = 'Statistics, Ensemble',
     url = 'https://github.com/tdegeus/enstat',
     packages = find_packages(),
+    use_scm_version = {'write_to': 'enstat/_version.py'},
+    setup_requires = ['setuptools_scm'],
     install_requires = ['numpy'])

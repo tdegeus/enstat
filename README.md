@@ -2,6 +2,17 @@
 
 [![CI](https://github.com/tdegeus/enstat/workflows/CI/badge.svg)](https://github.com/tdegeus/enstat/actions)
 
+# Overview
+
+*enstat* is a library to facilitate the computation of ensemble averages 
+(and their standard deviation and variance). 
+The key feature is that a class stored the sum of the first and second statistical moments
+and the number of samples, 
+such that adding a sample can be done trivially, while giving access to the mean etc.
+at all times.
+
+**This library is being developed, so for the moment subject to arbitrary changes.**
+
 # Disclaimer
 
 This library is free to use under the
