@@ -149,6 +149,18 @@ Continue an old average by specifying ``first``, ``second``, ``norm``.
         if self.m_compute_variance:
             self.m_second = np.zeros(self.m_shape, self.m_dtype)
 
+    def shape(self):
+        r'''
+Return the data's shape.
+        '''
+        return self.m_shape
+
+    def size(self):
+        r'''
+Return the data's size.
+        '''
+        return np.prod(self.m_shape)
+
     def add_sample(self, data):
         r'''
 Add a sample.
@@ -265,6 +277,7 @@ Continue an old average by specifying ``first``, ``second``, ``norm``.
         self.m_second = second
         self.m_norm = norm
         self.m_size = size
+        self.m_shape = [self.m_size]
         self.m_dtype = dtype
 
     def _allocate(self, data):
@@ -275,20 +288,23 @@ Allocate data if necessary.
         if self.m_first is not None:
             return
 
-        size = self.m_size if self.m_size is not None else data.size
-        dtype = self.m_dtype if self.m_dtype is not None else data.dtype
+        self.m_size = self.m_size if self.m_size is not None else data.size
+        self.m_dtype = self.m_dtype if self.m_dtype is not None else data.dtype
+        self.m_shape = [self.m_size]
 
-        self.m_norm = np.zeros((size), np.int64)
-        self.m_first = np.zeros((size), dtype)
+        self.m_norm = np.zeros((self.m_size), np.int64)
+        self.m_first = np.zeros((self.m_size), self.m_dtype)
 
         if self.m_compute_variance:
-            self.m_second = np.zeros((size), dtype)
+            self.m_second = np.zeros((self.m_size), self.m_dtype)
 
     def _expand(self, data):
 
-        if data.size <= self.m_first.size:
+        if data.size <= self.m_size:
             return
 
+        self.m_size = data.size
+        self.m_shape = [self.m_size]
         self.m_norm = _expand_array1d(self.m_norm, data.size)
         self.m_first = _expand_array1d(self.m_first, data.size)
 

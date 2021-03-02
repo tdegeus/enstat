@@ -28,6 +28,8 @@ class Test_mean(unittest.TestCase):
 
         self.assertTrue(np.allclose(average.mean(), np.mean(a, axis=0)))
         self.assertTrue(np.allclose(average.std(), np.std(a, axis=0), rtol=5e-1, atol=1e-3))
+        self.assertTrue(average.shape() == a.shape[1:])
+        self.assertTrue(average.size() == np.prod(a.shape[1:]))
 
 
     def test_Dynamic1d(self):
@@ -41,6 +43,8 @@ class Test_mean(unittest.TestCase):
 
         self.assertTrue(np.allclose(average.mean(), np.array([1, 2, 3])))
         self.assertTrue(np.allclose(average.std(), np.array([0, 0, 0])))
+        self.assertTrue(average.shape() == [3])
+        self.assertTrue(average.size() == 3)
 
 
 if __name__ == '__main__':
