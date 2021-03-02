@@ -27,6 +27,7 @@ class Test_mean(unittest.TestCase):
             average.add_sample(a[i, :, :])
 
         self.assertTrue(np.allclose(average.mean(), np.mean(a, axis=0)))
+        self.assertTrue(np.allclose(average.std(), np.std(a, axis=0), rtol=5e-1, atol=1e-3))
 
 
     def test_Dynamic1d(self):
@@ -34,10 +35,12 @@ class Test_mean(unittest.TestCase):
         average = enstat.mean.Dynamic1d()
 
         average.add_sample(np.array([1, 2, 3]))
+        average.add_sample(np.array([1, 2, 3]))
         average.add_sample(np.array([1, 2]))
         average.add_sample(np.array([1]))
 
         self.assertTrue(np.allclose(average.mean(), np.array([1, 2, 3])))
+        self.assertTrue(np.allclose(average.std(), np.array([0, 0, 0])))
 
 
 if __name__ == '__main__':

@@ -1,21 +1,21 @@
 import numpy as np
 
 class Scalar:
-
-    def __init__(self, first=0, second=0, norm=0):
-        r'''
+    r'''
 Allocate the ensemble average of a scalar.
 Add samples to it using :py:func:`Scalar.add_sample`.
-The mean, variance, and standard deviations can be obtained at any time.
+The mean, variance, and standard deviation can be obtained at any time.
 Also the sums of the first and statistical moments, as well as the number of samples can be
 obtained at any time.
 
 Continue an old average by specifying:
 
-:param first float: Sum of the first moment.
-:param second float: Sum of the second moment.
-:param norm int: Number of samples.
-        '''
+:param float first: Sum of the first moment.
+:param float second: Sum of the second moment.
+:param int norm: Number of samples.
+    '''
+
+    def __init__(self, first=0, second=0, norm=0):
 
         self.m_first = first
         self.m_second = second
@@ -26,11 +26,11 @@ Continue an old average by specifying:
 Add a sample.
 Internally changes the sums of the first and second statistical moments and normalisation.
 
-:param data float: the scalar sample.
+:param float data: the scalar sample.
         '''
 
         self.m_first += np.sum(data.ravel())
-        self.m_second += np.sum(data.ravel() ** 2.0)
+        self.m_second += np.sum(data.ravel() ** 2)
         self.m_norm += data.size
 
     def mean(self):
@@ -92,37 +92,132 @@ Sum of the second statistical moment.
 
 
 class StaticNd:
+    r'''
+Allocate the ensemble average of an Nd-array (of same size for all samples).
+Add samples to it using :py:func:`StaticNd.add_sample`.
+The mean, variance, and standard deviation can be obtained at any time.
+Also the sums of the first and statistical moments, as well as the number of samples can be
+obtained at any time.
 
-    def __init__(self, shape=None, dtype=None):
+Continue an old average by specifying ``first``, ``second``, ``norm``.
 
-        self.m_first = None
-        self.m_norm = None
-        self.shape = shape
-        self.dtype = dtype
+:param bool compute_variance:
+    If set ``False`` no second moment will be computed.
+    The variance an standard deviation will not be available.
+
+:param list shape, optional:
+    The shape of the data.
+    If not specified it is determined form the first sample.
+
+:param type dtype, optional:
+    The numpy-type of the data.
+    If not specified it is determined form the first sample.
+
+:param np.array<T> first: Continued computation: Sum of the first moment.
+:param np.array<T> second: Continued computation: Sum of the second moment.
+:param np.array<np.int64> norm: Continued computation: Number of samples.
+    '''
+
+    def __init__(
+        self,
+        compute_variance=True,
+        shape=None,
+        dtype=None,
+        first=None,
+        second=None,
+        norm=None):
+
+        self.m_compute_variance = compute_variance
+        self.m_first = first
+        self.m_second = second
+        self.m_norm = norm
+        self.m_shape = shape
+        self.m_dtype = dtype
 
     def _allocate(self, data):
 
         if self.m_first is not None:
-            assert data.shape == self.shape
+            assert data.shape == self.m_shape
             return
 
-        self.shape = self.shape if self.shape is not None else data.shape
-        self.dtype = self.dtype if self.dtype is not None else data.dtype
+        self.m_shape = self.m_shape if self.m_shape is not None else data.shape
+        self.m_dtype = self.m_dtype if self.m_dtype is not None else data.dtype
 
-        self.m_first = np.zeros(self.shape, self.dtype)
-        self.m_norm = np.zeros(self.shape, np.int64)
+        self.m_norm = np.zeros(self.m_shape, np.int64)
+        self.m_first = np.zeros(self.m_shape, self.m_dtype)
+
+        if self.m_compute_variance:
+            self.m_second = np.zeros(self.m_shape, self.m_dtype)
 
     def add_sample(self, data):
+        r'''
+Add a sample.
+Internally changes the sums of the first and second statistical moments and normalisation.
+
+:param np.array<T> data: the sample.
+        '''
 
         self._allocate(data)
 
-        self.m_first += data
         self.m_norm += 1
+        self.m_first += data
+
+        if self.m_compute_variance:
+            self.m_second += data ** 2
 
     def mean(self):
+        r'''
+Obtain the current mean.
+N.B. samples can be added afterwards without any problems.
+        '''
 
         return self.m_first / np.where(self.m_norm > 0, self.m_norm, 1)
 
+    def variance(self):
+        r'''
+Obtain the current variance.
+N.B. samples can be added afterwards without any problems.
+        '''
+
+        assert self.m_compute_variance
+        n = np.where(self.m_norm > 0, self.m_norm, 1)
+        return (self.m_second / n - (self.m_first / n) ** 2) * n / (n - 1)
+
+    def std(self):
+        r'''
+Obtain the current standard deviation.
+N.B. samples can be added afterwards without any problems.
+        '''
+
+        return np.sqrt(self.variance())
+
+    def norm(self):
+        r'''
+Return normalisation: the number of samples.
+
+:return: Scalar.
+        '''
+
+        return self.m_norm
+
+    def first(self):
+        r'''
+Sum of the first statistical moment.
+
+:return: Scalar.
+        '''
+
+        return self.m_first
+
+    def second(self):
+        r'''
+Sum of the second statistical moment.
+
+:return: Scalar.
+        '''
+
+        assert self.m_compute_variance
+        return self.m_second
 
 def _expand_array1d(data, size):
 
@@ -130,47 +225,95 @@ def _expand_array1d(data, size):
     tmp[: data.size] = data
     return tmp
 
-class Dynamic1d:
+class Dynamic1d(StaticNd):
+    r'''
+Allocate the ensemble average of an 1d-array (which grows depending of the size of the samples).
+Add samples to it using :py:func:`Dynamic1d.add_sample`.
+The mean, variance, and standard deviation can be obtained at any time.
+Also the sums of the first and statistical moments, as well as the number of samples can be
+obtained at any time.
 
-    def __init__(self, size=None, dtype=None):
+Continue an old average by specifying ``first``, ``second``, ``norm``.
 
-        self.m_first = None
-        self.m_norm = None
-        self.size = size
-        self.dtype = dtype
+:param bool compute_variance:
+    If set ``False`` no second moment will be computed.
+    The variance an standard deviation will not be available.
+
+:param list size, optional:
+    The initial size of the data.
+
+:param type dtype, optional:
+    The numpy-type of the data.
+    If not specified it is determined form the first sample.
+
+:param np.array<T> first: Continued computation: Sum of the first moment.
+:param np.array<T> second: Continued computation: Sum of the second moment.
+:param np.array<np.int64> norm: Continued computation: Number of samples.
+    '''
+
+    def __init__(
+        self,
+        compute_variance=True,
+        size=None,
+        dtype=None,
+        first=None,
+        second=None,
+        norm=None):
+
+        self.m_compute_variance = compute_variance
+        self.m_first = first
+        self.m_second = second
+        self.m_norm = norm
+        self.m_size = size
+        self.m_dtype = dtype
 
     def _allocate(self, data):
+        r'''
+Allocate data if necessary.
+        '''
 
         if self.m_first is not None:
             return
 
-        size = self.size if self.size is not None else data.size
-        dtype = self.dtype if self.dtype is not None else data.dtype
+        size = self.m_size if self.m_size is not None else data.size
+        dtype = self.m_dtype if self.m_dtype is not None else data.dtype
 
-        self.m_first = np.zeros((size), dtype)
         self.m_norm = np.zeros((size), np.int64)
+        self.m_first = np.zeros((size), dtype)
+
+        if self.m_compute_variance:
+            self.m_second = np.zeros((size), dtype)
 
     def _expand(self, data):
 
         if data.size <= self.m_first.size:
             return
 
-        self.m_first = _expand_array1d(self.m_first, data.size)
         self.m_norm = _expand_array1d(self.m_norm, data.size)
+        self.m_first = _expand_array1d(self.m_first, data.size)
+
+        if self.m_compute_variance:
+            self.m_second = _expand_array1d(self.m_second, data.size)
 
     def add_sample(self, data):
+        r'''
+Add a sample.
+Internally changes the sums of the first and second statistical moments and normalisation.
+
+:param np.array<T> data: the sample.
+        '''
 
         assert data.ndim == 1
 
         self._allocate(data)
         self._expand(data)
 
-        self.m_first[: data.size] += data
         self.m_norm[: data.size] += 1
+        self.m_first[: data.size] += data
 
-    def mean(self):
+        if self.m_compute_variance:
+            self.m_second[: data.size] += data ** 2
 
-        return self.m_first / np.where(self.m_norm > 0, self.m_norm, 1)
 
 if __name__ == "__main__":
     pass
