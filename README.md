@@ -47,3 +47,13 @@ conda install -c conda-forge enstat
 pip install enstat
 ```
 
+# Change-log
+
+## v0.3.0
+
+*   Adding mask option to `enstat.static.StaticNd`.
+
+## v0.2.0
+
+*   Adding size and shape methods.
+*   Various generalisations.
