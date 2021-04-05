@@ -161,19 +161,29 @@ Return the data's size.
         '''
         return np.prod(self.m_shape)
 
-    def add_sample(self, data):
+    def add_sample(self, data, mask=None):
         r'''
 Add a sample.
 Internally changes the sums of the first and second statistical moments and normalisation.
 
 :param np.array<T> data: the sample.
+:param np.array<bool> mask: optional, mask entries.
         '''
 
         self._allocate(data)
 
+        # masked data
+        if mask is not None:
+            incl = mask != True
+            self.m_norm[incl] += 1
+            self.m_first[incl] += data[incl]
+            if self.m_compute_variance:
+                self.m_second[incl] += data[incl] ** 2
+            return
+
+        # unmasked data
         self.m_norm += 1
         self.m_first += data
-
         if self.m_compute_variance:
             self.m_second += data ** 2
 
