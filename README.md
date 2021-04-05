@@ -5,6 +5,8 @@
 [![Conda Version](https://img.shields.io/conda/vn/conda-forge/enstat.svg)](https://anaconda.org/conda-forge/enstat)
 [![PyPi release](https://img.shields.io/pypi/v/enstat.svg)](https://pypi.org/project/enstat/)
 
+Documentation: [enstat.readthedocs.io](https://enstat.readthedocs.io)
+
 # Overview
 
 *enstat* is a library to facilitate the computation of ensemble averages 
