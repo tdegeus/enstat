@@ -32,6 +32,30 @@ class Test_mean(unittest.TestCase):
         self.assertTrue(average.size() == np.prod(a.shape[1:]))
 
 
+    def test_StaticNd_mask(self):
+
+        average = enstat.mean.StaticNd()
+
+        a = np.random.random(35 * 50 * 20).reshape(35, 50, 20)
+        m = np.random.random(35 * 50 * 20).reshape(35, 50, 20) > 0.8
+
+        for i in range(a.shape[0]):
+            average.add_sample(a[i, :, :], m[i, :, :])
+
+        self.assertTrue(np.isclose(
+            np.sum(average.first()) / np.sum(average.norm()),
+            np.mean(a[m != True])
+        ))
+
+
+        self.assertTrue(np.isclose(
+            np.sum(average.first()) / np.sum(average.norm()),
+            np.mean(a[m != True])
+        ))
+
+        self.assertTrue(np.all(np.equal(average.norm(), np.sum(m != True, axis=0))))
+
+
     def test_Dynamic1d(self):
 
         average = enstat.mean.Dynamic1d()
