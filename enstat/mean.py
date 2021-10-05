@@ -40,7 +40,7 @@ N.B. samples can be added afterwards without any problems.
         '''
 
         if self.m_norm == 0:
-            return 0
+            return np.NaN
 
         return self.m_first / self.m_norm
 
@@ -50,8 +50,8 @@ Obtain the current variance.
 N.B. samples can be added afterwards without any problems.
         '''
 
-        if self.m_norm == 0:
-            return 0
+        if self.m_norm <= 1:
+            return np.NaN
 
         return (self.m_second / self.m_norm - (self.m_first / self.m_norm) ** 2) * self.m_norm / (self.m_norm - 1)
 
@@ -193,7 +193,9 @@ Obtain the current mean.
 N.B. samples can be added afterwards without any problems.
         '''
 
-        return self.m_first / np.where(self.m_norm > 0, self.m_norm, 1)
+        n = np.where(self.m_norm > 0, self.m_norm, 1)
+        ret = self.m_first / n
+        return np.where(self.m_norm > 0, ret, np.NaN)
 
     def variance(self):
         r'''
@@ -202,8 +204,9 @@ N.B. samples can be added afterwards without any problems.
         '''
 
         assert self.m_compute_variance
-        n = np.where(self.m_norm > 0, self.m_norm, 1)
-        return (self.m_second / n - (self.m_first / n) ** 2) * n / (n - 1)
+        n = np.where(self.m_norm > 0, self.m_norm, 2)
+        ret = (self.m_second / n - (self.m_first / n) ** 2) * n / (n - 1)
+        return np.where(self.m_norm > 0, ret, np.NaN)
 
     def std(self):
         r'''
