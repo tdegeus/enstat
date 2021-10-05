@@ -9,10 +9,10 @@ Documentation: [enstat.readthedocs.io](https://enstat.readthedocs.io)
 
 # Overview
 
-*enstat* is a library to facilitate the computation of ensemble averages 
-(and their standard deviation and variance). 
+*enstat* is a library to facilitate the computation of ensemble averages
+(and their standard deviation and variance).
 The key feature is that a class stored the sum of the first and second statistical moments
-and the number of samples, 
+and the number of samples,
 such that adding a sample can be done trivially, while giving access to the mean etc.
 at all times.
 
@@ -29,7 +29,7 @@ Bug reports or feature requests can be filed on
 As always, the code comes with no guarantee.
 None of the developers can be held responsible for possible mistakes.
 
-Download: 
+Download:
 [.zip file](https://github.com/tdegeus/enstat/zipball/master) |
 [.tar.gz file](https://github.com/tdegeus/enstat/tarball/master).
 
