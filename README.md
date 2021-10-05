@@ -53,6 +53,13 @@ pip install enstat
 
 # Change-log
 
+## v0.3.1
+
+*   Return NaN when there is no data (before zero was returned)
+*   (style) Fixing pre-commit
+*   (style) Renaming "test" -> "tests"
+*   (style) Applying pre-commit
+
 ## v0.3.0
 
 *   Adding mask option to `enstat.static.StaticNd`.
