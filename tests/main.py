@@ -7,7 +7,31 @@ import enstat.mean
 
 
 class Test_mean(unittest.TestCase):
+    """
+    tests
+    """
+
     def test_Scalar(self):
+        """
+        Check for zero division.
+        """
+
+        average = enstat.mean.Scalar()
+
+        average.add_sample(1.0)
+
+        self.assertFalse(np.isnan(average.mean()))
+        self.assertTrue(np.isnan(average.std()))
+
+        average.add_sample(1.0)
+
+        self.assertFalse(np.isnan(average.mean()))
+        self.assertFalse(np.isnan(average.std()))
+
+    def test_Scalar(self):
+        """
+        Basic test of "mean" and "std" using a random sample.
+        """
 
         average = enstat.mean.Scalar()
 
@@ -20,6 +44,9 @@ class Test_mean(unittest.TestCase):
         self.assertTrue(np.isclose(average.std(), np.std(a), rtol=1e-3))
 
     def test_StaticNd(self):
+        """
+        Basic test of "mean" and "std" using a random sample.
+        """
 
         average = enstat.mean.StaticNd()
 
@@ -29,11 +56,26 @@ class Test_mean(unittest.TestCase):
             average.add_sample(a[i, :, :])
 
         self.assertTrue(np.allclose(average.mean(), np.mean(a, axis=0)))
-        self.assertTrue(
-            np.allclose(average.std(), np.std(a, axis=0), rtol=5e-1, atol=1e-3)
-        )
+        self.assertTrue(np.allclose(average.std(), np.std(a, axis=0), rtol=5e-1, atol=1e-3))
         self.assertTrue(average.shape() == a.shape[1:])
         self.assertTrue(average.size() == np.prod(a.shape[1:]))
+
+    def test_StaticNd(self):
+        """
+        Check for zero division.
+        """
+
+        average = enstat.mean.StaticNd()
+
+        average.add_sample(np.array([1.0]))
+
+        self.assertFalse(np.isnan(average.mean()))
+        self.assertTrue(np.isnan(average.std()))
+
+        average.add_sample(np.array([1.0]))
+
+        self.assertFalse(np.isnan(average.mean()))
+        self.assertFalse(np.isnan(average.std()))
 
     def test_StaticNd_mask(self):
 
@@ -59,9 +101,7 @@ class Test_mean(unittest.TestCase):
             )
         )
 
-        self.assertTrue(
-            np.all(np.equal(average.norm(), np.sum(np.logical_not(m), axis=0)))
-        )
+        self.assertTrue(np.all(np.equal(average.norm(), np.sum(np.logical_not(m), axis=0))))
 
     def test_Dynamic1d(self):
 
@@ -79,6 +119,10 @@ class Test_mean(unittest.TestCase):
 
 
 class Test_defaultdict(unittest.TestCase):
+    """
+    functionality
+    """
+
     def test_Scalar(self):
 
         average = defaultdict(enstat.mean.Scalar)

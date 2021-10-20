@@ -199,6 +199,9 @@ class StaticNd:
         N.B. samples can be added afterwards without any problems.
         """
 
+        if self.m_norm is None:
+            return None
+
         n = np.where(self.m_norm > 0, self.m_norm, 1)
         ret = self.m_first / n
         return np.where(self.m_norm > 0, ret, np.NaN)
@@ -208,6 +211,9 @@ class StaticNd:
         Obtain the current variance.
         N.B. samples can be added afterwards without any problems.
         """
+
+        if self.m_norm is None:
+            return None
 
         assert self.m_compute_variance
         n = np.where(self.m_norm > 1, self.m_norm, 2)
@@ -219,6 +225,9 @@ class StaticNd:
         Obtain the current standard deviation.
         N.B. samples can be added afterwards without any problems.
         """
+
+        if self.m_norm is None:
+            return None
 
         return np.sqrt(self.variance())
 

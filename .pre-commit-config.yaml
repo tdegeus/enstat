@@ -8,7 +8,7 @@ repos:
   rev: 21.9b0
   hooks:
   - id: black
-    args: [--safe, --quiet]
+    args: [--safe, --quiet, --line-length=100]
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v4.0.1
   hooks:
@@ -31,10 +31,10 @@ repos:
   - id: pyupgrade
     args: [--py36-plus]
 - repo: https://github.com/PyCQA/flake8
-  rev: 3.9.2
+  rev: 4.0.1
   hooks:
   - id: flake8
-    args: [--max-line-length=100, "--per-file-ignores=*/__init__.py:F401"]
+    args: [--max-line-length=110, "--per-file-ignores=*/__init__.py:F401"]
 - repo: https://github.com/asottile/setup-cfg-fmt
   rev: v1.18.0
   hooks:
