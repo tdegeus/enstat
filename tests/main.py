@@ -13,7 +13,7 @@ class Test_mean(unittest.TestCase):
 
     def test_Scalar(self):
         """
-        Check for zero division.
+        Basic test of "mean" and "std" using a random sample.
         """
 
         average = enstat.mean.Scalar()
@@ -28,9 +28,9 @@ class Test_mean(unittest.TestCase):
         self.assertFalse(np.isnan(average.mean()))
         self.assertFalse(np.isnan(average.std()))
 
-    def test_Scalar(self):
+    def test_Scalar_division(self):
         """
-        Basic test of "mean" and "std" using a random sample.
+        Check for zero division.
         """
 
         average = enstat.mean.Scalar()
@@ -60,7 +60,7 @@ class Test_mean(unittest.TestCase):
         self.assertTrue(average.shape() == a.shape[1:])
         self.assertTrue(average.size() == np.prod(a.shape[1:]))
 
-    def test_StaticNd(self):
+    def test_StaticNd_division(self):
         """
         Check for zero division.
         """
