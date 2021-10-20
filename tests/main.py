@@ -18,12 +18,12 @@ class Test_mean(unittest.TestCase):
 
         average = enstat.mean.Scalar()
 
-        average.add_sample(1.0)
+        average.add_sample(np.array(1.0))
 
         self.assertFalse(np.isnan(average.mean()))
         self.assertTrue(np.isnan(average.std()))
 
-        average.add_sample(1.0)
+        average.add_sample(np.array(1.0))
 
         self.assertFalse(np.isnan(average.mean()))
         self.assertFalse(np.isnan(average.std()))
