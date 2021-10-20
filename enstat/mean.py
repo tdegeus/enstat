@@ -210,9 +210,9 @@ class StaticNd:
         """
 
         assert self.m_compute_variance
-        n = np.where(self.m_norm > 0, self.m_norm, 2)
+        n = np.where(self.m_norm > 1, self.m_norm, 2)
         ret = (self.m_second / n - (self.m_first / n) ** 2) * n / (n - 1)
-        return np.where(self.m_norm > 0, ret, np.NaN)
+        return np.where(self.m_norm > 1, ret, np.NaN)
 
     def std(self):
         r"""
