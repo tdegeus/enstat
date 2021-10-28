@@ -11,12 +11,12 @@ class Test_mean(unittest.TestCase):
     tests
     """
 
-    def test_Scalar(self):
+    def test_scalar(self):
         """
         Basic test of "mean" and "std" using a random sample.
         """
 
-        average = enstat.mean.Scalar()
+        average = enstat.scalar()
 
         average.add_sample(np.array(1.0))
 
@@ -28,12 +28,12 @@ class Test_mean(unittest.TestCase):
         self.assertFalse(np.isnan(average.mean()))
         self.assertFalse(np.isnan(average.std()))
 
-    def test_Scalar_division(self):
+    def test_scalar_division(self):
         """
         Check for zero division.
         """
 
-        average = enstat.mean.Scalar()
+        average = enstat.scalar()
 
         a = np.random.random(50 * 20).reshape(50, 20)
 
@@ -43,12 +43,12 @@ class Test_mean(unittest.TestCase):
         self.assertTrue(np.isclose(average.mean(), np.mean(a)))
         self.assertTrue(np.isclose(average.std(), np.std(a), rtol=1e-3))
 
-    def test_StaticNd(self):
+    def test_static(self):
         """
         Basic test of "mean" and "std" using a random sample.
         """
 
-        average = enstat.mean.StaticNd()
+        average = enstat.static()
 
         a = np.random.random(35 * 50 * 20).reshape(35, 50, 20)
 
@@ -60,12 +60,33 @@ class Test_mean(unittest.TestCase):
         self.assertTrue(average.shape() == a.shape[1:])
         self.assertTrue(average.size() == np.prod(a.shape[1:]))
 
-    def test_StaticNd_division(self):
+    def test_static_ravel(self):
+        """
+        Like :py:func:`test_static` but with a test of `ravel`.
+        """
+
+        arraylike = enstat.static()
+        scalar = enstat.scalar()
+
+        a = np.random.random(35 * 50 * 20).reshape(35, 50, 20)
+
+        for i in range(a.shape[0]):
+            arraylike.add_sample(a[i, :, :])
+            scalar.add_sample(a[i, :, :])
+
+        flat = arraylike.ravel()
+
+        self.assertTrue(np.allclose(flat.mean(), np.mean(a)))
+        self.assertTrue(np.allclose(flat.std(), np.std(a), rtol=5e-1, atol=1e-3))
+        self.assertTrue(np.allclose(flat.mean(), scalar.mean()))
+        self.assertTrue(np.allclose(flat.std(), scalar.std(), rtol=5e-1, atol=1e-3))
+
+    def test_static_division(self):
         """
         Check for zero division.
         """
 
-        average = enstat.mean.StaticNd()
+        average = enstat.static()
 
         average.add_sample(np.array([1.0]))
 
@@ -77,9 +98,9 @@ class Test_mean(unittest.TestCase):
         self.assertFalse(np.isnan(average.mean()))
         self.assertFalse(np.isnan(average.std()))
 
-    def test_StaticNd_mask(self):
+    def test_static_mask(self):
 
-        average = enstat.mean.StaticNd()
+        average = enstat.static()
 
         a = np.random.random(35 * 50 * 20).reshape(35, 50, 20)
         m = np.random.random(35 * 50 * 20).reshape(35, 50, 20) > 0.8
@@ -103,9 +124,9 @@ class Test_mean(unittest.TestCase):
 
         self.assertTrue(np.all(np.equal(average.norm(), np.sum(np.logical_not(m), axis=0))))
 
-    def test_Dynamic1d(self):
+    def test_dynamic1d(self):
 
-        average = enstat.mean.Dynamic1d()
+        average = enstat.dynamic1d()
 
         average.add_sample(np.array([1, 2, 3]))
         average.add_sample(np.array([1, 2, 3]))
@@ -123,9 +144,9 @@ class Test_defaultdict(unittest.TestCase):
     functionality
     """
 
-    def test_Scalar(self):
+    def test_scalar(self):
 
-        average = defaultdict(enstat.mean.Scalar)
+        average = defaultdict(enstat.scalar)
 
         a = np.random.random(50 * 20).reshape(50, 20)
         b = np.random.random(52 * 21).reshape(52, 21)
@@ -139,9 +160,9 @@ class Test_defaultdict(unittest.TestCase):
         self.assertTrue(np.isclose(average["a"].mean(), np.mean(a)))
         self.assertTrue(np.isclose(average["b"].mean(), np.mean(b)))
 
-    def test_StaticNd(self):
+    def test_static(self):
 
-        average = defaultdict(enstat.mean.StaticNd)
+        average = defaultdict(enstat.static)
 
         a = np.random.random(35 * 50 * 20).reshape(35, 50, 20)
         b = np.random.random(37 * 52 * 21).reshape(37, 52, 21)

@@ -3,37 +3,37 @@
 Python module
 *************
 
-Mean
-----
+Summary
+-------
 
 .. autosummary::
 
-    enstat.mean.Scalar
-    enstat.mean.StaticNd
-    enstat.mean.Dynamic1d
+    enstat.scalar
+    enstat.static
+    enstat.dynamic1d
 
-Scalar
-^^^^^^
+scalar
+------
 
-.. autoclass:: enstat.mean.Scalar
+.. autoclass:: enstat.scalar
    :members:
    :undoc-members:
    :show-inheritance:
    :inherited-members:
 
-StaticNd
-^^^^^^^^
+static
+------
 
-.. autoclass:: enstat.mean.StaticNd
+.. autoclass:: enstat.static
    :members:
    :undoc-members:
    :show-inheritance:
    :inherited-members:
 
-Dynamic1d
-^^^^^^^^^
+dynamic1d
+---------
 
-.. autoclass:: enstat.mean.Dynamic1d
+.. autoclass:: enstat.dynamic1d
    :members:
    :undoc-members:
    :show-inheritance:

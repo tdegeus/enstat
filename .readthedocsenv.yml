@@ -1,7 +1,8 @@
 channels:
 - conda-forge
 dependencies:
+- numpy
+- python
+- setuptools_scm
 - sphinx
 - sphinx_rtd_theme
-- python
-- numpy
