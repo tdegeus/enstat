@@ -51,7 +51,7 @@ pip install enstat
 
 # Change-log
 
-## v0.3.2
+## v0.4.0
 
 *   Simplifying namespace. Using opportunity to simplify class names
 *   Avoiding zero division warning
