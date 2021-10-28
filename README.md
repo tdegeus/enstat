@@ -16,8 +16,6 @@ and the number of samples,
 such that adding a sample can be done trivially, while giving access to the mean etc.
 at all times.
 
-**This library is being developed, so for the moment subject to arbitrary changes.**
-
 # Disclaimer
 
 This library is free to use under the
@@ -52,6 +50,12 @@ pip install enstat
 ```
 
 # Change-log
+
+## v0.3.2
+
+*   Simplifying namespace. Using opportunity to simplify class names
+*   Avoiding zero division warning
+*   Adding test with defaultdict
 
 ## v0.3.1
 
