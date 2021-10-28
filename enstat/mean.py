@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 
 
@@ -17,6 +19,8 @@ class Scalar:
     """
 
     def __init__(self, first=0, second=0, norm=0):
+
+        warnings.warn("Deprecated. Use: enstat.scalar.", DeprecationWarning)
 
         self.m_first = first
         self.m_second = second
@@ -132,6 +136,8 @@ class StaticNd:
         second=None,
         norm=None,
     ):
+
+        warnings.warn("Deprecated. Use: enstat.static.", DeprecationWarning)
 
         self.m_compute_variance = compute_variance
         self.m_first = first
@@ -302,6 +308,8 @@ class Dynamic1d(StaticNd):
         second=None,
         norm=None,
     ):
+
+        warnings.warn("Deprecated. Use: enstat.dynamic1d.", DeprecationWarning)
 
         self.m_compute_variance = compute_variance
         self.m_first = first
