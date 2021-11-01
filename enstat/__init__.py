@@ -156,6 +156,11 @@ class static:
         norm: ArrayLike = None,
     ):
 
+        if isinstance(shape, int):
+            shape = (shape, )
+        elif shape:
+            shape = tuple(shape)
+
         self.m_compute_variance = compute_variance
         self.m_first = first
         self.m_second = second
