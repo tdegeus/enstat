@@ -157,7 +157,7 @@ class static:
     ):
 
         if isinstance(shape, int):
-            shape = (shape, )
+            shape = (shape,)
         elif shape:
             shape = tuple(shape)
 
