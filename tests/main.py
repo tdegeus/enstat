@@ -135,8 +135,8 @@ class Test_mean(unittest.TestCase):
 
         self.assertTrue(np.allclose(average.mean(), np.array([1, 2, 3])))
         self.assertTrue(np.allclose(average.std(), np.array([0, 0, 0])))
-        self.assertTrue(average.shape() == [3])
-        self.assertTrue(average.size() == 3)
+        self.assertEqual(average.shape(), (3,))
+        self.assertEqual(average.size(), 3)
 
 
 class Test_defaultdict(unittest.TestCase):
