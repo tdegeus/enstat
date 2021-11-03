@@ -149,7 +149,7 @@ class static:
     def __init__(
         self,
         compute_variance: bool = True,
-        shape: ArrayLike = None,
+        shape: tuple[int] = None,
         dtype: DTypeLike = None,
         first: ArrayLike = None,
         second: ArrayLike = None,
@@ -372,7 +372,7 @@ class dynamic1d(static):
         self.m_second = second
         self.m_norm = norm
         self.m_size = size
-        self.m_shape = [self.m_size]
+        self.m_shape = (self.m_size,)
         self.m_dtype = dtype
 
     def _allocate(self, data: ArrayLike):
@@ -385,7 +385,7 @@ class dynamic1d(static):
 
         self.m_size = self.m_size if self.m_size is not None else data.size
         self.m_dtype = self.m_dtype if self.m_dtype is not None else data.dtype
-        self.m_shape = [self.m_size]
+        self.m_shape = (self.m_size,)
 
         self.m_norm = np.zeros((self.m_size), np.int64)
         self.m_first = np.zeros((self.m_size), self.m_dtype)
@@ -399,7 +399,7 @@ class dynamic1d(static):
             return
 
         self.m_size = data.size
-        self.m_shape = [self.m_size]
+        self.m_shape = (self.m_size,)
         self.m_norm = _expand_array1d(self.m_norm, data.size)
         self.m_first = _expand_array1d(self.m_first, data.size)
 
