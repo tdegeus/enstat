@@ -51,6 +51,10 @@ pip install enstat
 
 # Change-log
 
+## v0.4.1
+
+*   Enforcing shape to be a tuple (like in NumPy) (#14)
+
 ## v0.4.0
 
 *   Simplifying namespace. Using opportunity to simplify class names
