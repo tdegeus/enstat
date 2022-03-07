@@ -40,7 +40,7 @@ class scalar:
 
         data = np.array(data)
         self.m_first += np.sum(data)
-        self.m_second += np.sum(data ** 2)
+        self.m_second += np.sum(data**2)
         self.m_norm += data.size
 
     def mean(self):
@@ -239,7 +239,7 @@ class static:
         self.m_norm += 1
         self.m_first += data
         if self.m_compute_variance:
-            self.m_second += data ** 2
+            self.m_second += data**2
 
     def mean(self):
         r"""
@@ -423,7 +423,7 @@ class dynamic1d(static):
         self.m_first[: data.size] += data
 
         if self.m_compute_variance:
-            self.m_second[: data.size] += data ** 2
+            self.m_second[: data.size] += data**2
 
 
 if __name__ == "__main__":

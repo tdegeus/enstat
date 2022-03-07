@@ -197,7 +197,7 @@ class StaticNd:
         self.m_norm += 1
         self.m_first += data
         if self.m_compute_variance:
-            self.m_second += data ** 2
+            self.m_second += data**2
 
     def mean(self):
         r"""
@@ -367,7 +367,7 @@ class Dynamic1d(StaticNd):
         self.m_first[: data.size] += data
 
         if self.m_compute_variance:
-            self.m_second[: data.size] += data ** 2
+            self.m_second[: data.size] += data**2
 
 
 if __name__ == "__main__":
