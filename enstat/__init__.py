@@ -226,8 +226,7 @@ class static:
         self.first[index] += datum
 
         if self.compute_variance:
-            self.second[index] += datum ** 2
-
+            self.second[index] += datum**2
 
     def mean(self):
         r"""
@@ -276,6 +275,7 @@ class static:
 
         return np.sqrt(self.variance())
 
+
 def _expand_array1d(data, size):
 
     tmp = np.zeros((size), data.dtype)
@@ -319,8 +319,14 @@ class dynamic1d(static):
         second: ArrayLike = None,
         norm: ArrayLike = None,
     ):
-        super().__init__(compute_variance=compute_variance, shape=(size,) if size is not None else None, dtype=dtype, first=first, second=second, norm=norm)
-
+        super().__init__(
+            compute_variance=compute_variance,
+            shape=(size,) if size is not None else None,
+            dtype=dtype,
+            first=first,
+            second=second,
+            norm=norm,
+        )
 
     def _expand(self, size: int):
 
