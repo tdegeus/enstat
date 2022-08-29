@@ -202,6 +202,33 @@ class static:
         if self.compute_variance:
             self.second += data**2
 
+    def add_point(self, datum: float | int, index: int):
+        """
+        Add a single point. Note that::
+
+            ensemble.add_point(datum, index)
+
+        Is equivalent to::
+
+            data = np.empty(ensemble.shape)
+            mask = np.ones(ensemble.shape, dtype=bool)
+            data[index] = datum
+            mask[index] = False
+            ensemble.add_sample(data, mask)
+
+        (but faster).
+        """
+
+        if self.first is None:
+            raise OSError("shape should be pre-specified")
+
+        self.norm[index] += 1
+        self.first[index] += datum
+
+        if self.compute_variance:
+            self.second[index] += datum ** 2
+
+
     def mean(self):
         r"""
         Current mean.
@@ -320,6 +347,15 @@ class dynamic1d(static):
 
         if self.compute_variance:
             self.second[: data.size] += data**2
+
+    def add_point(self, datum: float | int, index: int):
+
+        if self.first is None:
+            self._allocate(index + 1, type(datum))
+        else:
+            self._expand(index + 1)
+
+        return super().add_point(datum, index)
 
 
 if __name__ == "__main__":
