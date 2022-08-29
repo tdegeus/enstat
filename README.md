@@ -51,6 +51,13 @@ pip install enstat
 
 # Change-log
 
+## v0.5.0
+
+*   [BREAKING CHANGE] Changing `shape`, `size`, `dtype`, `first`, `second`, `norm` to properties rather than functions (now call without `()`)
+*   Adding `add_point` to array classes
+*   [tests] Using unittest discover
+*   [docs] Using furo theme. Minor updates.
+
 ## v0.4.1
 
 *   Enforcing shape to be a tuple (like in NumPy) (#14)
