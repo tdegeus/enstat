@@ -57,8 +57,8 @@ class Test_mean(unittest.TestCase):
 
         self.assertTrue(np.allclose(average.mean(), np.mean(a, axis=0)))
         self.assertTrue(np.allclose(average.std(), np.std(a, axis=0), rtol=5e-1, atol=1e-3))
-        self.assertTrue(average.shape() == a.shape[1:])
-        self.assertTrue(average.size() == np.prod(a.shape[1:]))
+        self.assertTrue(average.shape == a.shape[1:])
+        self.assertTrue(average.size == np.prod(a.shape[1:]))
 
     def test_static_ravel(self):
         """
@@ -110,19 +110,19 @@ class Test_mean(unittest.TestCase):
 
         self.assertTrue(
             np.isclose(
-                np.sum(average.first()) / np.sum(average.norm()),
+                np.sum(average.first) / np.sum(average.norm),
                 np.mean(a[np.logical_not(m)]),
             )
         )
 
         self.assertTrue(
             np.isclose(
-                np.sum(average.first()) / np.sum(average.norm()),
+                np.sum(average.first) / np.sum(average.norm),
                 np.mean(a[np.logical_not(m)]),
             )
         )
 
-        self.assertTrue(np.all(np.equal(average.norm(), np.sum(np.logical_not(m), axis=0))))
+        self.assertTrue(np.all(np.equal(average.norm, np.sum(np.logical_not(m), axis=0))))
 
     def test_dynamic1d(self):
 
@@ -135,8 +135,8 @@ class Test_mean(unittest.TestCase):
 
         self.assertTrue(np.allclose(average.mean(), np.array([1, 2, 3])))
         self.assertTrue(np.allclose(average.std(), np.array([0, 0, 0])))
-        self.assertEqual(average.shape(), (3,))
-        self.assertEqual(average.size(), 3)
+        self.assertEqual(average.shape, (3,))
+        self.assertEqual(average.size, 3)
 
 
 class Test_defaultdict(unittest.TestCase):
@@ -175,8 +175,8 @@ class Test_defaultdict(unittest.TestCase):
 
         self.assertTrue(np.allclose(average["a"].mean(), np.mean(a, axis=0)))
         self.assertTrue(np.allclose(average["b"].mean(), np.mean(b, axis=0)))
-        self.assertTrue(average["a"].shape() == a.shape[1:])
-        self.assertTrue(average["b"].shape() == b.shape[1:])
+        self.assertTrue(average["a"].shape == a.shape[1:])
+        self.assertTrue(average["b"].shape == b.shape[1:])
 
 
 if __name__ == "__main__":
