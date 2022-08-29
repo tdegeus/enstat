@@ -15,9 +15,10 @@ class scalar:
     Add samples to it using :py:func:`scalar.add_sample`.
     The mean, variance, and standard deviation can be obtained at any time.
     They are derived from the following members:
-    - :py:attr:`scalar.first`: Sum of the first statistical moment.
-    - :py:attr:`scalar.second`: Sum of the second statistical moment.
-    - :py:attr:`scalar.norm`: Number of samples.
+
+    *   :py:attr:`scalar.first`: Sum of the first statistical moment.
+    *   :py:attr:`scalar.second`: Sum of the second statistical moment.
+    *   :py:attr:`scalar.norm`: Number of samples.
 
     To continue an old average by specifying:
 
@@ -87,23 +88,25 @@ class static:
     Add samples to it using :py:func:`static.add_sample`.
     The mean, variance, and standard deviation can be obtained at any time.
     They are derived from the following members:
-    - :py:attr:`static.first`: Sum of the first statistical moment.
-    - :py:attr:`static.second`: Sum of the second statistical moment.
-    - :py:attr:`static.norm`: Number of samples.
+
+    *   :py:attr:`static.first`: Sum of the first statistical moment.
+    *   :py:attr:`static.second`: Sum of the second statistical moment.
+    *   :py:attr:`static.norm`: Number of samples.
 
     Furthermore, the following members are available:
-    - :py:attr:`static.shape`: Shape of the data.
-    - :py:attr:`static.size`: Size of the data (= prod(shape)).
+
+    *   :py:attr:`static.shape`: Shape of the data.
+    *   :py:attr:`static.size`: Size of the data (= prod(shape)).
 
     :param compute_variance:
         If set ``False`` no second moment will be computed (making things slightly faster).
         In that case, the variance an standard deviation will not be available.
 
-    :param shape, optional:
+    :param shape:
         The shape of the data.
         If not specified it is determined form the first sample.
 
-    :param dtype, optional:
+    :param dtype:
         The type of the data.
         If not specified it is determined form the first sample.
 
@@ -153,14 +156,23 @@ class static:
 
     @property
     def dtype(self):
+        """
+        The type of the data.
+        """
         return self.first.dtype
 
     @property
     def shape(self):
+        """
+        The shape of the data.
+        """
         return self.first.shape
 
     @property
     def size(self):
+        """
+        The size of the data.
+        """
         return np.prod(self.first.shape)
 
     def ravel(self) -> scalar:
@@ -301,7 +313,7 @@ class dynamic1d(static):
         The initial size of the data.
         If not specified it is determined form the first sample.
 
-    :param dtype, optional:
+    :param dtype:
         The type of the data.
         If not specified it is determined form the first sample.
 
