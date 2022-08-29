@@ -5,7 +5,7 @@ enstat
 without the need to load all data at once.
 This done by keeping in memory the sum of the first (and second) statistical moment,
 as well as the normalisation.
-A common practical ensemble is computing the average of an ensemble of realisations.
+A common practical application is computing the average of an ensemble of realisations.
 
 A simple example:
 Suppose that we have 100 realisations each with 1000 blocks, and we want to know the ensemble
