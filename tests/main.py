@@ -99,6 +99,9 @@ class Test_mean(unittest.TestCase):
         self.assertFalse(np.isnan(average.std()))
 
     def test_static_mask(self):
+        """
+        Mask part of the data.
+        """
 
         average = enstat.static()
 
@@ -125,6 +128,9 @@ class Test_mean(unittest.TestCase):
         self.assertTrue(np.all(np.equal(average.norm, np.sum(np.logical_not(m), axis=0))))
 
     def test_static_add_point(self):
+        """
+        Add data point-by-point.
+        """
 
         a = np.random.random(35 * 50).reshape(35, 50)
         m = np.random.random(35 * 50).reshape(35, 50) > 0.8
@@ -151,6 +157,9 @@ class Test_mean(unittest.TestCase):
         self.assertTrue(np.all(np.equal(average.norm, np.sum(np.logical_not(m), axis=0))))
 
     def test_dynamic1d(self):
+        """
+        Dynamically grow shape.
+        """
 
         average = enstat.dynamic1d()
 
@@ -158,11 +167,13 @@ class Test_mean(unittest.TestCase):
         average.add_sample(np.array([1, 2, 3]))
         average.add_sample(np.array([1, 2]))
         average.add_sample(np.array([1]))
+        average.add_sample(np.array([1, 2, 3, 4]))
+        average.add_sample(np.array([1, 2, 3, 4]))
 
-        self.assertTrue(np.allclose(average.mean(), np.array([1, 2, 3])))
-        self.assertTrue(np.allclose(average.std(), np.array([0, 0, 0])))
-        self.assertEqual(average.shape, (3,))
-        self.assertEqual(average.size, 3)
+        self.assertTrue(np.allclose(average.mean(), np.array([1, 2, 3, 4])))
+        self.assertTrue(np.allclose(average.std(), np.array([0, 0, 0, 0])))
+        self.assertEqual(average.shape, (4,))
+        self.assertEqual(average.size, 4)
 
 
 class Test_defaultdict(unittest.TestCase):
