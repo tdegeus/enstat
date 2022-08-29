@@ -124,6 +124,32 @@ class Test_mean(unittest.TestCase):
 
         self.assertTrue(np.all(np.equal(average.norm, np.sum(np.logical_not(m), axis=0))))
 
+    def test_static_add_point(self):
+
+        a = np.random.random(35 * 50).reshape(35, 50)
+        m = np.random.random(35 * 50).reshape(35, 50) > 0.8
+        average = enstat.static(shape=a.shape[1])
+
+        for i in range(a.shape[0]):
+            for j in np.argwhere(~m[i, :]).ravel():
+                average.add_point(a[i, j], j)
+
+        self.assertTrue(
+            np.isclose(
+                np.sum(average.first) / np.sum(average.norm),
+                np.mean(a[np.logical_not(m)]),
+            )
+        )
+
+        self.assertTrue(
+            np.isclose(
+                np.sum(average.first) / np.sum(average.norm),
+                np.mean(a[np.logical_not(m)]),
+            )
+        )
+
+        self.assertTrue(np.all(np.equal(average.norm, np.sum(np.logical_not(m), axis=0))))
+
     def test_dynamic1d(self):
 
         average = enstat.dynamic1d()
