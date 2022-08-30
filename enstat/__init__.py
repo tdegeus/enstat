@@ -240,12 +240,11 @@ class static:
         if self.compute_variance:
             self.second[index] += datum**2
 
-    def mean(self):
+    def mean(self, min_norm: int = 1) -> ArrayLike:
         r"""
         Current mean.
         Samples can be added afterwards without any problems.
-
-        :rtype: ArrayLike, shape: :py:func:`static.shape`.
+        :param min_norm: Minimum number of samples to consider as value output.
         :return: Mean.
         """
 
@@ -254,14 +253,13 @@ class static:
 
         n = np.where(self.norm > 0, self.norm, 1)
         ret = self.first / n
-        return np.where(self.norm > 0, ret, np.NaN)
+        return np.where(self.norm >= min_norm, ret, np.NaN)
 
-    def variance(self):
+    def variance(self, min_norm: int = 2) -> ArrayLike:
         r"""
         Current variance.
         Samples can be added afterwards without any problems.
-
-        :rtype: ArrayLike, shape: :py:func:`static.shape`.
+        :param min_norm: Minimum number of samples to consider as value output.
         :return: Variance.
         """
 
@@ -271,21 +269,20 @@ class static:
         assert self.compute_variance
         n = np.where(self.norm > 1, self.norm, 2)
         ret = (self.second / n - (self.first / n) ** 2) * n / (n - 1)
-        return np.where(self.norm > 1, ret, np.NaN)
+        return np.where(self.norm >= min_norm, ret, np.NaN)
 
-    def std(self):
+    def std(self, min_norm: int = 2) -> ArrayLike:
         r"""
         Current standard deviation.
         Samples can be added afterwards without any problems.
-
-        :rtype: ArrayLike, shape: :py:func:`static.shape`.
+        :param min_norm: Minimum number of samples to consider as value output.
         :return: Standard deviation.
         """
 
         if self.norm is None:
             return None
 
-        return np.sqrt(self.variance())
+        return np.sqrt(self.variance(min_norm))
 
 
 def _expand_array1d(data, size):
