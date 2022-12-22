@@ -33,8 +33,13 @@ class scalar:
         self.second = second
         self.norm = norm
 
+    def __add__(self, datum: float):
+
+        self.add_sample(datum)
+        return self
+
     def add_sample(self, datum: float):
-        r"""
+        """
         Add a sample.
         Internally changes the sums of the first and second statistical moments and normalisation.
         :param datum: Sample.
@@ -186,6 +191,11 @@ class static:
             second=np.sum(self.second),
             norm=np.sum(self.norm),
         )
+
+    def __add__(self, data: ArrayLike):
+
+        self.add_sample(data)
+        return self
 
     def add_sample(self, data: ArrayLike, mask: ArrayLike = None):
         r"""
@@ -347,6 +357,11 @@ class dynamic1d(static):
 
         if self.compute_variance:
             self.second = _expand_array1d(self.second, size)
+
+    def __add__(self, data: ArrayLike):
+
+        self.add_sample(data)
+        return self
 
     def add_sample(self, data: ArrayLike):
 

@@ -18,12 +18,12 @@ class Test_mean(unittest.TestCase):
 
         average = enstat.scalar()
 
-        average.add_sample(np.array(1.0))
+        average += np.array(1.0)
 
         self.assertFalse(np.isnan(average.mean()))
         self.assertTrue(np.isnan(average.std()))
 
-        average.add_sample(np.array(1.0))
+        average += np.array(1.0)
 
         self.assertFalse(np.isnan(average.mean()))
         self.assertFalse(np.isnan(average.std()))
@@ -38,7 +38,7 @@ class Test_mean(unittest.TestCase):
         a = np.random.random(50 * 20).reshape(50, 20)
 
         for i in range(a.shape[0]):
-            average.add_sample(a[i, :])
+            average += a[i, :]
 
         self.assertTrue(np.isclose(average.mean(), np.mean(a)))
         self.assertTrue(np.isclose(average.std(), np.std(a), rtol=1e-3))
@@ -53,7 +53,7 @@ class Test_mean(unittest.TestCase):
         a = np.random.random(35 * 50 * 20).reshape(35, 50, 20)
 
         for i in range(a.shape[0]):
-            average.add_sample(a[i, :, :])
+            average += a[i, :, :]
 
         self.assertTrue(np.allclose(average.mean(), np.mean(a, axis=0)))
         self.assertTrue(np.allclose(average.std(), np.std(a, axis=0), rtol=5e-1, atol=1e-3))
@@ -71,8 +71,8 @@ class Test_mean(unittest.TestCase):
         a = np.random.random(35 * 50 * 20).reshape(35, 50, 20)
 
         for i in range(a.shape[0]):
-            arraylike.add_sample(a[i, :, :])
-            scalar.add_sample(a[i, :, :])
+            arraylike += a[i, :, :]
+            scalar += a[i, :, :]
 
         flat = arraylike.ravel()
 
@@ -88,12 +88,12 @@ class Test_mean(unittest.TestCase):
 
         average = enstat.static()
 
-        average.add_sample(np.array([1.0]))
+        average += np.array([1.0])
 
         self.assertFalse(np.isnan(average.mean()))
         self.assertTrue(np.isnan(average.std()))
 
-        average.add_sample(np.array([1.0]))
+        average += np.array([1.0])
 
         self.assertFalse(np.isnan(average.mean()))
         self.assertFalse(np.isnan(average.std()))
@@ -163,12 +163,12 @@ class Test_mean(unittest.TestCase):
 
         average = enstat.dynamic1d()
 
-        average.add_sample(np.array([1, 2, 3]))
-        average.add_sample(np.array([1, 2, 3]))
-        average.add_sample(np.array([1, 2]))
-        average.add_sample(np.array([1]))
-        average.add_sample(np.array([1, 2, 3, 4]))
-        average.add_sample(np.array([1, 2, 3, 4]))
+        average += np.array([1, 2, 3])
+        average += np.array([1, 2, 3])
+        average += np.array([1, 2])
+        average += np.array([1])
+        average += np.array([1, 2, 3, 4])
+        average += np.array([1, 2, 3, 4])
 
         self.assertTrue(np.allclose(average.mean(), np.array([1, 2, 3, 4])))
         self.assertTrue(np.allclose(average.std(), np.array([0, 0, 0, 0])))
@@ -189,10 +189,10 @@ class Test_defaultdict(unittest.TestCase):
         b = np.random.random(52 * 21).reshape(52, 21)
 
         for i in range(a.shape[0]):
-            average["a"].add_sample(a[i, :])
+            average["a"] += a[i, :]
 
         for i in range(b.shape[0]):
-            average["b"].add_sample(b[i, :])
+            average["b"] += b[i, :]
 
         self.assertTrue(np.isclose(average["a"].mean(), np.mean(a)))
         self.assertTrue(np.isclose(average["b"].mean(), np.mean(b)))
@@ -205,10 +205,10 @@ class Test_defaultdict(unittest.TestCase):
         b = np.random.random(37 * 52 * 21).reshape(37, 52, 21)
 
         for i in range(a.shape[0]):
-            average["a"].add_sample(a[i, :, :])
+            average["a"] += a[i, :, :]
 
         for i in range(b.shape[0]):
-            average["b"].add_sample(b[i, :, :])
+            average["b"] += b[i, :, :]
 
         self.assertTrue(np.allclose(average["a"].mean(), np.mean(a, axis=0)))
         self.assertTrue(np.allclose(average["b"].mean(), np.mean(b, axis=0)))
