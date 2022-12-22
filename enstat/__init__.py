@@ -4,6 +4,7 @@ import numpy as np
 from numpy.typing import ArrayLike
 from numpy.typing import DTypeLike
 
+from . import detail  # noqa: F401
 from . import mean  # noqa: F401
 from ._version import version  # noqa: F401
 from ._version import version_tuple  # noqa: F401
@@ -394,6 +395,215 @@ class dynamic1d(static):
             self._expand(index + 1)
 
         return super().add_point(datum, index)
+
+
+class Histogram:
+    """
+    Histogram.
+    One can add samples to it using :py:func:`Histogram.add_sample`.
+
+    :param bin_edges: The bin-edges.
+    :param right: Whether the bin includes the right edge (or the left edge) see numpy.digitize.
+    :param count: The initial count (default: zeros).
+    """
+
+    def __init__(self, bin_edges: ArrayLike, right: bool = False, count: ArrayLike = None):
+
+        assert np.all(np.diff(bin_edges) > 0) or np.all(np.diff(bin_edges) < 0)
+
+        self.right = right
+        self.bin_edges = np.array(bin_edges)
+
+        if count is not None:
+            assert len(count) == len(bin_edges) - 1
+            self.count = np.array(count).astype(np.uint64)
+        else:
+            self.count = np.zeros((len(bin_edges) - 1), np.uint64)
+
+    def strip(self, min_count: int = 0):
+        """
+        Strip the histogram of empty bins to the left and the right.
+
+        :param min_count: The minimum count for a bin to be considered non-empty.
+        """
+
+        self.lstrip(min_count)
+        self.rstrip(min_count)
+
+    def lstrip(self, min_count: int = 0):
+        """
+        Strip the histogram of empty bins to the left.
+
+        :param min_count: The minimum count for a bin to be considered non-empty.
+        """
+
+        i = np.argmax(self.count > min_count)
+        self.count = self.count[i:]
+        self.bin_edges = self.bin_edges[i:]
+
+    def rstrip(self, min_count: int = 0):
+        """
+        Strip the histogram of empty bins to the right.
+
+        :param min_count: The minimum count for a bin to be considered non-empty.
+        """
+
+        i = len(self.count) - np.argmax(self.count[::-1] > min_count)
+        self.count = self.count[:i]
+        self.bin_edges = self.bin_edges[: i + 1]
+
+    def squash(self, n: int):
+        """
+        Squash the histogram by combining ``n`` sequential bins into one
+        (the last bin may be smaller).
+
+        :param n: Number of bins to group.
+        """
+
+        if n >= self.count.size:
+            self.count = np.sum(self.count).reshape(1)
+            self.bin_edges = self.bin_edges[[0, -1]]
+            return
+
+        m = self.count.size // n
+        s = m * n
+        self.count = np.hstack((self.count[:s].reshape((m, n)).sum(axis=1), np.sum(self.count[s:])))
+
+        if len(self.bin_edges) // n != self.count.size + 1:
+            self.bin_edges = np.hstack((self.bin_edges[::n], self.bin_edges[-1]))
+        else:
+            self.bin_edges = self.bin_edges[::n]
+
+    def merge_right(self, index: ArrayLike):
+        """
+        Merge the bins to the right of ``index`` into ``index``.
+
+        :param index: The indices of the bin to merge into.
+        """
+
+        index = np.array(index)
+        index = np.sort(np.where(index < 0, index + self.count.size, index))
+
+        if index[-1] == self.count.size - 1:
+            index = index[:-1]
+
+        self.count[index] += self.count[index + 1]
+        self.count = np.delete(self.count, index + 1)
+        self.bin_edges = np.delete(self.bin_edges, index + 1)
+
+    def merge_left(self, index: ArrayLike):
+        """
+        Merge the bins to the left of ``index`` into ``index``.
+
+        :param index: The indices of the bin to merge into.
+        """
+
+        index = np.array(index)
+        index = np.sort(np.where(index < 0, index + self.count.size, index))
+
+        if index[0] == 0:
+            index = index[1:]
+
+        self.count[index - 1] += self.count[index]
+        self.count = np.delete(self.count, index)
+        self.bin_edges = np.delete(self.bin_edges, index)
+
+    def as_integer(self):
+        """
+        Merge bins not encompassing an integer with the preceding bin.
+        For example: a bin with edges ``[1.1, 1.9]`` is removed, but ``[0.9, 1.1]`` is not removed.
+        """
+
+        assert self.bin_edges.size > 1
+
+        merge = np.argwhere(np.diff(np.floor(self.bin_edges)) == 0).ravel()
+        self.merge_right(merge)
+        self.bin_edges = np.floor(self.bin_edges)
+        self.right = False
+
+    def __add__(self, data: ArrayLike):
+
+        self.add_sample(data)
+        return self
+
+    def add_sample(self, data: ArrayLike):
+        """
+        Add a sample to the histogram.
+        You can also use the ``+`` operator.
+        """
+
+        bin = np.digitize(data, self.bin_edges, self.right) - 1
+        self.count += np.bincount(bin, minlength=self.count.size).astype(np.uint64)
+
+    @property
+    def x(self) -> ArrayLike:
+        """
+        The bin centers.
+        """
+
+        return 0.5 * (self.bin_edges[:-1] + self.bin_edges[1:])
+
+    @property
+    def density(self) -> ArrayLike:
+        """
+        The probability density function at the bin.
+        """
+
+        return self.count / np.sum(np.diff(self.bin_edges) * self.count)
+
+
+def auto_histogram(
+    data: ArrayLike,
+    bins: int = None,
+    mode: str = "equal",
+    min_count: int = None,
+    min_width: float = None,
+    integer: bool = False,
+    bin_edges: ArrayLike = None,
+):
+    r"""
+    Construct a histogram from data.
+
+    :param data: Data (flattened).
+    :param bins: Number of bins.
+    :param mode:
+        Mode with which to compute the bin-edges.
+
+        -   ``'equal'``: each bin has equal width.
+        -   ``'log'``: logarithmic spacing.
+        -   ``'uniform'``: uniform number of data-points per bin.
+        -   ``'voronoi'``: each bin is the region between two adjacent data-points.
+
+    :param min_count: Minimum number of data-points per bin.
+    :param min_width: Minimum width of a bin.
+
+    :param integer:
+        If ``True``, bins not encompassing an integer are removed
+        (e.g. a bin with edges ``[1.1, 1.9]`` is removed, but ``[0.9, 1.1]`` is not removed).
+
+    :param bin_edges: Specify the bin-edges (overrides ``bins`` and ``mode``).
+
+    :return: The :py:class:`Histogram` object.
+    """
+
+    if hasattr(bins, "__len__"):
+        raise OSError("Only the number of bins can be specified")
+
+    if bin_edges is None:
+        bin_edges = detail.histogram_bin_edges(data, bins, mode, min_count)
+
+    if min_count is not None:
+        bin_edges = detail.histogram_bin_edges_mincount(data, bin_edges, min_count)
+
+    if min_width is not None:
+        bin_edges = detail.histogram_bin_edges_minwidth(bin_edges, min_width)
+
+    if integer:
+        bin_edges = detail.histogram_bin_edges_integer(bin_edges)
+
+    return Histogram(
+        bin_edges, right=True, count=np.histogram(data, bins=bin_edges, density=False)[0]
+    )
 
 
 if __name__ == "__main__":
