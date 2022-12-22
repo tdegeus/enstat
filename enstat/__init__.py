@@ -42,6 +42,7 @@ class scalar:
         """
         Add a sample.
         Internally changes the sums of the first and second statistical moments and normalisation.
+
         :param datum: Sample.
         """
 
@@ -54,6 +55,7 @@ class scalar:
         r"""
         Current mean.
         Samples can be added afterwards without any problems.
+
         :return: Mean.
         """
 
@@ -66,6 +68,7 @@ class scalar:
         r"""
         Current variance.
         Samples can be added afterwards without any problems.
+
         :return: Variance.
         """
 
@@ -81,6 +84,7 @@ class scalar:
         r"""
         Current standard deviation.
         Samples can be added afterwards without any problems.
+
         :return: Standard deviation.
         """
 
@@ -183,6 +187,7 @@ class static:
     def ravel(self) -> scalar:
         r"""
         Return as :py:class:`scalar`: all entries are summed.
+
         :return: Ensemble average.
         """
 
@@ -254,6 +259,7 @@ class static:
         r"""
         Current mean.
         Samples can be added afterwards without any problems.
+
         :param min_norm: Minimum number of samples to consider as value output.
         :return: Mean.
         """
@@ -269,6 +275,7 @@ class static:
         r"""
         Current variance.
         Samples can be added afterwards without any problems.
+
         :param min_norm: Minimum number of samples to consider as value output.
         :return: Variance.
         """
@@ -285,6 +292,7 @@ class static:
         r"""
         Current standard deviation.
         Samples can be added afterwards without any problems.
+
         :param min_norm: Minimum number of samples to consider as value output.
         :return: Standard deviation.
         """
