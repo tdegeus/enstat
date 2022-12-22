@@ -452,6 +452,19 @@ class Histogram:
         self.count = self.count[:i]
         self.bin_edges = self.bin_edges[: i + 1]
 
+    def interp(self, bin_edges: ArrayLike):
+        """
+        Interpolate the histogram to a new set of bin-edges.
+
+        :param bin_edges: The new bin-edges.
+        """
+
+        assert np.all(np.diff(bin_edges) > 0) or np.all(np.diff(bin_edges) < 0)
+
+        m = 0.5 * (bin_edges[:-1] + bin_edges[1:])
+        self.count = np.interp(m, self.x, self.count)
+        self.bin_edges = bin_edges
+
     def squash(self, n: int):
         """
         Squash the histogram by combining ``n`` sequential bins into one
