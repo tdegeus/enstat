@@ -16,7 +16,7 @@ class Test_norm(unittest.TestCase):
         bin_edges = [-0.5, 0.5, 1.5, 2.5]
         p, _ = np.histogram(data, bins=bin_edges, density=True)
 
-        hist = enstat.auto_histogram(data, bin_edges=bin_edges)
+        hist = enstat.histogram.from_data(data, bin_edges=bin_edges)
 
         self.assertTrue(np.allclose(hist.density, p))
 
@@ -25,7 +25,7 @@ class Test_norm(unittest.TestCase):
         bin_edges = [-0.5, 0.5, 1.5, 2.5]
         mid = [0, 1, 2]
 
-        hist = enstat.Histogram(bin_edges=bin_edges)
+        hist = enstat.histogram(bin_edges=bin_edges)
 
         self.assertEqual(mid, hist.x.tolist())
 
@@ -41,7 +41,7 @@ class Test_accumulate(unittest.TestCase):
         bin_edges = np.linspace(0, 1, 21)
         p, _ = np.histogram(data.ravel(), bins=bin_edges, density=True)
 
-        hist = enstat.Histogram(bin_edges=bin_edges)
+        hist = enstat.histogram(bin_edges=bin_edges)
 
         for i in range(data.shape[0]):
             hist += data[i, :]
@@ -60,7 +60,7 @@ class Test_strip(unittest.TestCase):
         bin_edges = np.linspace(-1, 2, 25)
         count, _ = np.histogram(data, bins=bin_edges, density=False)
 
-        hist = enstat.auto_histogram(data, bin_edges=bin_edges)
+        hist = enstat.histogram.from_data(data, bin_edges=bin_edges)
         hist.lstrip()
 
         self.assertTrue(np.allclose(hist.bin_edges, bin_edges[8:]))
@@ -72,7 +72,7 @@ class Test_strip(unittest.TestCase):
         bin_edges = np.linspace(-1, 2, 25)
         count, _ = np.histogram(data, bins=bin_edges, density=False)
 
-        hist = enstat.auto_histogram(data, bin_edges=bin_edges)
+        hist = enstat.histogram.from_data(data, bin_edges=bin_edges)
         hist.rstrip()
 
         self.assertTrue(np.allclose(hist.bin_edges, bin_edges[:-8]))
@@ -84,7 +84,7 @@ class Test_strip(unittest.TestCase):
         bin_edges = np.linspace(-1, 2, 25)
         count, _ = np.histogram(data, bins=bin_edges, density=False)
 
-        hist = enstat.auto_histogram(data, bin_edges=bin_edges)
+        hist = enstat.histogram.from_data(data, bin_edges=bin_edges)
         hist.strip()
 
         self.assertTrue(np.allclose(hist.bin_edges, bin_edges[8:-8]))
@@ -101,7 +101,7 @@ class Test_merge(unittest.TestCase):
         bin_edges = [0, 1, 2, 3, 4, 5]
         count = [1, 2, 1, 2, 3]
 
-        hist = enstat.Histogram(bin_edges=bin_edges, count=count)
+        hist = enstat.histogram(bin_edges=bin_edges, count=count)
         hist.merge_right([0, 2])
 
         self.assertEqual([0, 2, 4, 5], hist.bin_edges.tolist())
@@ -112,7 +112,7 @@ class Test_merge(unittest.TestCase):
         bin_edges = [0, 1, 2, 3, 4, 5]
         count = [1, 2, 1, 2, 3]
 
-        hist = enstat.Histogram(bin_edges=bin_edges, count=count)
+        hist = enstat.histogram(bin_edges=bin_edges, count=count)
         hist.merge_right([0])
 
         self.assertEqual([0, 2, 3, 4, 5], hist.bin_edges.tolist())
@@ -123,7 +123,7 @@ class Test_merge(unittest.TestCase):
         bin_edges = [0, 1, 2, 3, 4, 5]
         count = [1, 2, 1, 2, 3]
 
-        hist = enstat.Histogram(bin_edges=bin_edges, count=count)
+        hist = enstat.histogram(bin_edges=bin_edges, count=count)
         hist.merge_right([-1])
 
         self.assertEqual(bin_edges, hist.bin_edges.tolist())
@@ -134,7 +134,7 @@ class Test_merge(unittest.TestCase):
         bin_edges = [0, 1, 2, 3, 4, 5]
         count = [1, 2, 1, 2, 3]
 
-        hist = enstat.Histogram(bin_edges=bin_edges, count=count)
+        hist = enstat.histogram(bin_edges=bin_edges, count=count)
         hist.merge_left([0, 2])
 
         self.assertEqual([0, 1, 3, 4, 5], hist.bin_edges.tolist())
@@ -145,7 +145,7 @@ class Test_merge(unittest.TestCase):
         bin_edges = [0, 1, 2, 3, 4, 5]
         count = [1, 2, 1, 2, 3]
 
-        hist = enstat.Histogram(bin_edges=bin_edges, count=count)
+        hist = enstat.histogram(bin_edges=bin_edges, count=count)
         hist.merge_left([0])
 
         self.assertEqual(bin_edges, hist.bin_edges.tolist())
@@ -156,7 +156,7 @@ class Test_merge(unittest.TestCase):
         bin_edges = [0, 1, 2, 3, 4, 5]
         count = [1, 2, 1, 2, 3]
 
-        hist = enstat.Histogram(bin_edges=bin_edges, count=count)
+        hist = enstat.histogram(bin_edges=bin_edges, count=count)
         hist.merge_left([-1])
 
         self.assertEqual([0, 1, 2, 3, 5], hist.bin_edges.tolist())
@@ -167,7 +167,7 @@ class Test_merge(unittest.TestCase):
         bin_edges = [0, 1, 2, 2.1, 3, 3.1, 4, 5]
         count = [1, 2, 1, 1, 1, 2, 3]
 
-        hist = enstat.Histogram(bin_edges=bin_edges, count=count)
+        hist = enstat.histogram(bin_edges=bin_edges, count=count)
         hist.as_integer()
 
         self.assertEqual([0, 1, 2, 3, 4, 5], hist.bin_edges.tolist())
@@ -178,7 +178,7 @@ class Test_merge(unittest.TestCase):
         bin_edges = [0, 0.9, 1, 2, 3, 4, 5]
         count = [1, 2, 1, 1, 2, 3]
 
-        hist = enstat.Histogram(bin_edges=bin_edges, count=count)
+        hist = enstat.histogram(bin_edges=bin_edges, count=count)
         hist.as_integer()
 
         self.assertEqual([0, 1, 2, 3, 4, 5], hist.bin_edges.tolist())
@@ -189,7 +189,7 @@ class Test_merge(unittest.TestCase):
         bin_edges = [0, 1, 2, 3, 4, 4.5, 5]
         count = [1, 2, 1, 2, 1, 3]
 
-        hist = enstat.Histogram(bin_edges=bin_edges, count=count)
+        hist = enstat.histogram(bin_edges=bin_edges, count=count)
         hist.as_integer()
 
         self.assertEqual([0, 1, 2, 3, 4, 5], hist.bin_edges.tolist())
@@ -206,7 +206,7 @@ class Test_squash(unittest.TestCase):
         bin_edges = [0, 1, 2, 3, 4, 6]
         count = [1, 2, 1, 2, 3]
 
-        hist = enstat.Histogram(bin_edges=bin_edges, count=count)
+        hist = enstat.histogram(bin_edges=bin_edges, count=count)
         hist.squash(2)
 
         self.assertEqual([3, 3, 3], hist.count.tolist())
@@ -217,25 +217,25 @@ class Test_squash(unittest.TestCase):
         bin_edges = [0, 1, 2, 3, 4, 6]
         count = [1, 2, 1, 2, 3]
 
-        hist = enstat.Histogram(bin_edges=bin_edges, count=count)
+        hist = enstat.histogram(bin_edges=bin_edges, count=count)
         hist.squash(3)
 
         self.assertEqual([4, 5], hist.count.tolist())
         self.assertEqual([0, 3, 6], hist.bin_edges.tolist())
 
-        hist = enstat.Histogram(bin_edges=bin_edges, count=count)
+        hist = enstat.histogram(bin_edges=bin_edges, count=count)
         hist.squash(4)
 
         self.assertEqual([6, 3], hist.count.tolist())
         self.assertEqual([0, 4, 6], hist.bin_edges.tolist())
 
-        hist = enstat.Histogram(bin_edges=bin_edges, count=count)
+        hist = enstat.histogram(bin_edges=bin_edges, count=count)
         hist.squash(5)
 
         self.assertEqual([9], hist.count.tolist())
         self.assertEqual([0, 6], hist.bin_edges.tolist())
 
-        hist = enstat.Histogram(bin_edges=bin_edges, count=count)
+        hist = enstat.histogram(bin_edges=bin_edges, count=count)
         hist.squash(6)
 
         self.assertEqual([9], hist.count.tolist())
@@ -246,7 +246,7 @@ class Test_squash(unittest.TestCase):
         bin_edges = [-1, 0, 1, 2, 3, 4, 6, 7]
         count = [0, 1, 2, 1, 2, 3, 0]
 
-        hist = enstat.Histogram(bin_edges=bin_edges, count=count)
+        hist = enstat.histogram(bin_edges=bin_edges, count=count)
         hist.strip()
         hist.squash(2)
 
@@ -286,7 +286,7 @@ class Test_histogram_bin_edges_voronoi(unittest.TestCase):
     def test_integer(self):
 
         data = np.array([0, 0, 1, 1, 1, 2, 2, 3, 4, 5, 6])
-        hist = enstat.auto_histogram(data, bins=10, mode="voronoi")
+        hist = enstat.histogram.from_data(data, bins=10, mode="voronoi")
 
         self.assertTrue(
             np.allclose(hist.bin_edges, np.array([-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5]))
@@ -295,7 +295,7 @@ class Test_histogram_bin_edges_voronoi(unittest.TestCase):
     def test_integer2(self):
 
         data = np.array([8, 8, 1, 1, 1, 2, 2, 3, 4, 5, 6])
-        hist = enstat.auto_histogram(data, bins=10, mode="voronoi")
+        hist = enstat.histogram.from_data(data, bins=10, mode="voronoi")
 
         self.assertTrue(np.allclose(hist.bin_edges, np.array([0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 7, 9])))
 

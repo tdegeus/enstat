@@ -11,8 +11,7 @@ Summary
     enstat.scalar
     enstat.static
     enstat.dynamic1d
-    enstat.Histogram
-    enstat.auto_histogram
+    enstat.histogram
 
 scalar
 ------
@@ -41,16 +40,11 @@ dynamic1d
    :show-inheritance:
    :inherited-members:
 
-Histogram
+histogram
 ---------
 
-.. autoclass:: enstat.Histogram
+.. autoclass:: enstat.histogram
    :members:
    :undoc-members:
    :show-inheritance:
    :inherited-members:
-
-auto_histogram
---------------
-
-.. autofunction:: enstat.auto_histogram

@@ -397,7 +397,7 @@ class dynamic1d(static):
         return super().add_point(datum, index)
 
 
-class Histogram:
+class histogram:
     """
     Histogram.
     One can add samples to it using :py:func:`Histogram.add_sample`.
@@ -412,13 +412,68 @@ class Histogram:
         assert np.all(np.diff(bin_edges) > 0) or np.all(np.diff(bin_edges) < 0)
 
         self.right = right
-        self.bin_edges = np.array(bin_edges)
+        self.bin_edges = np.array(bin_edges).astype(np.float64)
 
         if count is not None:
             assert len(count) == len(bin_edges) - 1
             self.count = np.array(count).astype(np.uint64)
         else:
             self.count = np.zeros((len(bin_edges) - 1), np.uint64)
+
+    @classmethod
+    def from_data(
+        cls,
+        data: ArrayLike,
+        bins: int = None,
+        mode: str = "equal",
+        min_count: int = None,
+        min_width: float = None,
+        integer: bool = False,
+        bin_edges: ArrayLike = None,
+    ):
+        r"""
+        Construct a histogram from data.
+
+        :param data: Data (flattened).
+        :param bins: Number of bins.
+        :param mode:
+            Mode with which to compute the bin-edges.
+
+            -   ``'equal'``: each bin has equal width.
+            -   ``'log'``: logarithmic spacing.
+            -   ``'uniform'``: uniform number of data-points per bin.
+            -   ``'voronoi'``: each bin is the region between two adjacent data-points.
+
+        :param min_count: Minimum number of data-points per bin.
+        :param min_width: Minimum width of a bin.
+
+        :param integer:
+            If ``True``, bins not encompassing an integer are removed
+            (e.g. a bin with edges ``[1.1, 1.9]`` is removed, but ``[0.9, 1.1]`` is not removed).
+
+        :param bin_edges: Specify the bin-edges (overrides ``bins`` and ``mode``).
+
+        :return: The :py:class:`Histogram` object.
+        """
+
+        if hasattr(bins, "__len__"):
+            raise OSError("Only the number of bins can be specified")
+
+        if bin_edges is None:
+            bin_edges = detail.histogram_bin_edges(data, bins, mode, min_count)
+
+        if min_count is not None:
+            bin_edges = detail.histogram_bin_edges_mincount(data, bin_edges, min_count)
+
+        if min_width is not None:
+            bin_edges = detail.histogram_bin_edges_minwidth(bin_edges, min_width)
+
+        if integer:
+            bin_edges = detail.histogram_bin_edges_integer(bin_edges)
+
+        return cls(
+            bin_edges, right=True, count=np.histogram(data, bins=bin_edges, density=False)[0]
+        )
 
     def strip(self, min_count: int = 0):
         """
@@ -562,61 +617,8 @@ class Histogram:
         The probability density function at the bin.
         """
 
-        return self.count / np.sum(np.diff(self.bin_edges) * self.count)
-
-
-def auto_histogram(
-    data: ArrayLike,
-    bins: int = None,
-    mode: str = "equal",
-    min_count: int = None,
-    min_width: float = None,
-    integer: bool = False,
-    bin_edges: ArrayLike = None,
-):
-    r"""
-    Construct a histogram from data.
-
-    :param data: Data (flattened).
-    :param bins: Number of bins.
-    :param mode:
-        Mode with which to compute the bin-edges.
-
-        -   ``'equal'``: each bin has equal width.
-        -   ``'log'``: logarithmic spacing.
-        -   ``'uniform'``: uniform number of data-points per bin.
-        -   ``'voronoi'``: each bin is the region between two adjacent data-points.
-
-    :param min_count: Minimum number of data-points per bin.
-    :param min_width: Minimum width of a bin.
-
-    :param integer:
-        If ``True``, bins not encompassing an integer are removed
-        (e.g. a bin with edges ``[1.1, 1.9]`` is removed, but ``[0.9, 1.1]`` is not removed).
-
-    :param bin_edges: Specify the bin-edges (overrides ``bins`` and ``mode``).
-
-    :return: The :py:class:`Histogram` object.
-    """
-
-    if hasattr(bins, "__len__"):
-        raise OSError("Only the number of bins can be specified")
-
-    if bin_edges is None:
-        bin_edges = detail.histogram_bin_edges(data, bins, mode, min_count)
-
-    if min_count is not None:
-        bin_edges = detail.histogram_bin_edges_mincount(data, bin_edges, min_count)
-
-    if min_width is not None:
-        bin_edges = detail.histogram_bin_edges_minwidth(bin_edges, min_width)
-
-    if integer:
-        bin_edges = detail.histogram_bin_edges_integer(bin_edges)
-
-    return Histogram(
-        bin_edges, right=True, count=np.histogram(data, bins=bin_edges, density=False)[0]
-    )
+        count = self.count.astype(np.float64)
+        return count / np.sum(np.diff(self.bin_edges) * count)
 
 
 if __name__ == "__main__":
