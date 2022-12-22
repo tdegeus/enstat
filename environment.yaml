@@ -1,6 +1,6 @@
 channels:
 - conda-forge
 dependencies:
-- python
-- numpy
 - furo
+- numpy
+- python
