@@ -484,6 +484,7 @@ class histogram:
 
         self.lstrip(min_count)
         self.rstrip(min_count)
+        return self
 
     def lstrip(self, min_count: int = 0):
         """
@@ -495,6 +496,7 @@ class histogram:
         i = np.argmax(self.count > min_count)
         self.count = self.count[i:]
         self.bin_edges = self.bin_edges[i:]
+        return self
 
     def rstrip(self, min_count: int = 0):
         """
@@ -506,6 +508,7 @@ class histogram:
         i = len(self.count) - np.argmax(self.count[::-1] > min_count)
         self.count = self.count[:i]
         self.bin_edges = self.bin_edges[: i + 1]
+        return self
 
     def interp(self, bin_edges: ArrayLike):
         """
@@ -519,6 +522,7 @@ class histogram:
         m = 0.5 * (bin_edges[:-1] + bin_edges[1:])
         self.count = np.interp(m, self.x, self.count)
         self.bin_edges = bin_edges
+        return self
 
     def squash(self, n: int):
         """
@@ -531,7 +535,7 @@ class histogram:
         if n >= self.count.size:
             self.count = np.sum(self.count).reshape(1)
             self.bin_edges = self.bin_edges[[0, -1]]
-            return
+            return self
 
         m = self.count.size // n
         s = m * n
@@ -541,6 +545,8 @@ class histogram:
             self.bin_edges = np.hstack((self.bin_edges[::n], self.bin_edges[-1]))
         else:
             self.bin_edges = self.bin_edges[::n]
+
+        return self
 
     def merge_right(self, index: ArrayLike):
         """
@@ -558,6 +564,7 @@ class histogram:
         self.count[index] += self.count[index + 1]
         self.count = np.delete(self.count, index + 1)
         self.bin_edges = np.delete(self.bin_edges, index + 1)
+        return self
 
     def merge_left(self, index: ArrayLike):
         """
@@ -575,6 +582,7 @@ class histogram:
         self.count[index - 1] += self.count[index]
         self.count = np.delete(self.count, index)
         self.bin_edges = np.delete(self.bin_edges, index)
+        return self
 
     def as_integer(self):
         """
@@ -602,6 +610,7 @@ class histogram:
 
         bin = np.digitize(data, self.bin_edges, self.right) - 1
         self.count += np.bincount(bin, minlength=self.count.size).astype(np.uint64)
+        return self
 
     @property
     def x(self) -> ArrayLike:
