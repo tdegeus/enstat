@@ -473,6 +473,7 @@ class histogram:
         if integer:
             bin_edges = detail.histogram_bin_edges_integer(bin_edges)
 
+        bin_edges = np.array(bin_edges)
         bin_edges[0] -= np.finfo(bin_edges.dtype).eps
         bin_edges[-1] += np.finfo(bin_edges.dtype).eps
         return cls(bin_edges, right=True).add_sample(data)

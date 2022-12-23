@@ -46,6 +46,9 @@ class Test_accumulate(unittest.TestCase):
         for i in range(data.shape[0]):
             hist += data[i, :]
 
+        self.assertEqual(hist.count_left, 0)
+        self.assertEqual(hist.count_right, 0)
+
         self.assertTrue(np.allclose(hist.density, p))
 
 
@@ -209,6 +212,9 @@ class Test_squash(unittest.TestCase):
         hist = enstat.histogram(bin_edges=bin_edges, count=count)
         hist.squash(2)
 
+        self.assertEqual(0, hist.count_left)
+        self.assertEqual(0, hist.count_right)
+
         self.assertEqual([3, 3, 3], hist.count.tolist())
         self.assertEqual([0, 2, 4, 6], hist.bin_edges.tolist())
 
@@ -219,6 +225,9 @@ class Test_squash(unittest.TestCase):
 
         hist = enstat.histogram(bin_edges=bin_edges, count=count)
         hist.squash(3)
+
+        self.assertEqual(0, hist.count_left)
+        self.assertEqual(0, hist.count_right)
 
         self.assertEqual([4, 5], hist.count.tolist())
         self.assertEqual([0, 3, 6], hist.bin_edges.tolist())
@@ -288,6 +297,9 @@ class Test_histogram_bin_edges_voronoi(unittest.TestCase):
         data = np.array([0, 0, 1, 1, 1, 2, 2, 3, 4, 5, 6])
         hist = enstat.histogram.from_data(data, bins=10, mode="voronoi")
 
+        self.assertEqual(hist.count_left, 0)
+        self.assertEqual(hist.count_right, 0)
+
         self.assertTrue(
             np.allclose(hist.bin_edges, np.array([-0.5, 0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 6.5]))
         )
@@ -296,6 +308,9 @@ class Test_histogram_bin_edges_voronoi(unittest.TestCase):
 
         data = np.array([8, 8, 1, 1, 1, 2, 2, 3, 4, 5, 6])
         hist = enstat.histogram.from_data(data, bins=10, mode="voronoi")
+
+        self.assertEqual(hist.count_left, 0)
+        self.assertEqual(hist.count_right, 0)
 
         self.assertTrue(np.allclose(hist.bin_edges, np.array([0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 7, 9])))
 
