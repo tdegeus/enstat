@@ -413,6 +413,8 @@ class histogram:
 
         self.right = right
         self.bin_edges = np.array(bin_edges).astype(np.float64)
+        self.count_left = 0
+        self.count_right = 0
 
         if count is not None:
             assert len(count) == len(bin_edges) - 1
@@ -471,9 +473,9 @@ class histogram:
         if integer:
             bin_edges = detail.histogram_bin_edges_integer(bin_edges)
 
-        return cls(
-            bin_edges, right=True, count=np.histogram(data, bins=bin_edges, density=False)[0]
-        )
+        bin_edges[0] -= np.finfo(bin_edges.dtype).eps
+        bin_edges[-1] += np.finfo(bin_edges.dtype).eps
+        return cls(bin_edges, right=True).add_sample(data)
 
     def strip(self, min_count: int = 0):
         """
@@ -609,6 +611,9 @@ class histogram:
         """
 
         bin = np.digitize(data, self.bin_edges, self.right) - 1
+        self.count_left += np.sum(bin < 0)
+        self.count_right += np.sum(bin >= self.count.size)
+        bin = bin[np.logical_and(bin >= 0, bin < self.count.size)]
         self.count += np.bincount(bin, minlength=self.count.size).astype(np.uint64)
         return self
 
