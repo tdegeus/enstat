@@ -620,6 +620,14 @@ class histogram:
         count = self.count.astype(np.float64)
         return count / np.sum(np.diff(self.bin_edges) * count)
 
+    @property
+    def p(self) -> ArrayLike:
+        """
+        The probability density function at the bin.
+        """
+
+        return self.density
+
 
 if __name__ == "__main__":
     pass
