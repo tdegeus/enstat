@@ -637,6 +637,14 @@ class histogram:
 
         return self.density
 
+    @property
+    def plot(self) -> tuple[ArrayLike, ArrayLike]:
+        """
+        Alias for ``(x, density)``.
+        """
+
+        return (self.x, self.density)
+
 
 if __name__ == "__main__":
     pass
