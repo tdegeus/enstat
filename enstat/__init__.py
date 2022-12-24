@@ -558,6 +558,9 @@ class histogram:
         :param index: The indices of the bin to merge into.
         """
 
+        if isinstance(index, int):
+            index = [index]
+
         index = np.array(index)
         index = np.sort(np.where(index < 0, index + self.count.size, index))
 
@@ -575,6 +578,9 @@ class histogram:
 
         :param index: The indices of the bin to merge into.
         """
+
+        if isinstance(index, int):
+            index = [index]
 
         index = np.array(index)
         index = np.sort(np.where(index < 0, index + self.count.size, index))
