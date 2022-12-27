@@ -20,6 +20,15 @@ class Test_norm(unittest.TestCase):
 
         self.assertTrue(np.allclose(hist.density, p))
 
+    def test_density_random(self):
+
+        for bin_edges in [np.logspace(-5, 1, 1000), np.linspace(0, 1, 1000)]:
+
+            data = np.random.random([1000])
+            p, _ = np.histogram(data, bins=bin_edges, density=True)
+            hist = enstat.histogram.from_data(data, bin_edges=bin_edges)
+            self.assertTrue(np.allclose(hist.density, p))
+
     def test_mid(self):
 
         bin_edges = [-0.5, 0.5, 1.5, 2.5]
