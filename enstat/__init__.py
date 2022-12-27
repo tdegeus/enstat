@@ -639,7 +639,7 @@ class histogram:
         """
 
         count = self.count.astype(np.float64)
-        return count / np.sum(np.diff(self.bin_edges) * count)
+        return count / (np.diff(self.bin_edges) * np.sum(count))
 
     @property
     def p(self) -> ArrayLike:
