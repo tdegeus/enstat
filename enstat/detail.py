@@ -31,21 +31,8 @@ def histogram_bin_edges(data: ArrayLike, bins: int, mode: str, min_count: int = 
 
         assert bins is not None
 
-        # number of data-points in each bin (equal for each)
-        count = int(np.floor(float(len(data)) / float(bins))) * np.ones(bins, dtype="int")
-
-        # increase the number of data-points by one is an many bins as needed,
-        # such that the total fits the total number of data-points
-        count[np.linspace(0, bins - 1, len(data) - np.sum(count)).astype(int)] += 1
-
-        # split the data
-        idx = np.empty((bins + 1), dtype="int")
-        idx[0] = 0
-        idx[1:] = np.cumsum(count)
-        idx[-1] = len(data) - 1
-
-        # determine the bin-edges
-        return np.unique(np.sort(data)[idx])
+        data = np.array_split(np.sort(data), bins)
+        return np.array([np.min(d) for d in data] + [np.max(data[-1])])
 
     if mode == "voronoi":
 
