@@ -32,7 +32,12 @@ def histogram_bin_edges(data: ArrayLike, bins: int, mode: str, min_count: int = 
         assert bins is not None
 
         data = np.array_split(np.sort(data), bins)
-        return np.array([np.min(d) for d in data] + [np.max(data[-1])])
+        bin_edges = np.empty(bins + 1, dtype=np.float64)
+        bin_edges[0] = np.min(data[0])
+        bin_edges[-1] = np.max(data[-1])
+        for i in range(1, bins):
+            bin_edges[i] = 0.5 * (np.max(data[i - 1]) + np.min(data[i]))
+        return bin_edges
 
     if mode == "voronoi":
 
