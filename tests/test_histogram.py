@@ -14,19 +14,40 @@ class Test_norm(unittest.TestCase):
 
         data = [0, 0, 0, 1, 1, 2]
         bin_edges = [-0.5, 0.5, 1.5, 2.5]
+        c, _ = np.histogram(data, bins=bin_edges, density=False)
         p, _ = np.histogram(data, bins=bin_edges, density=True)
 
         hist = enstat.histogram.from_data(data, bin_edges=bin_edges)
 
+        self.assertTrue(np.allclose(hist.count, c))
         self.assertTrue(np.allclose(hist.density, p))
 
     def test_density_random(self):
 
-        for bin_edges in [np.logspace(-5, 1, 1000), np.linspace(0, 1, 1000)]:
+        data = np.random.random([1001])
 
-            data = np.random.random([1000])
+        for bin_edges in [
+            np.logspace(-5, 1, 1000),
+            np.linspace(0, 1, 1000),
+            np.sort(np.random.random([10])),
+        ]:
+
+            c, _ = np.histogram(data, bins=bin_edges, density=False)
             p, _ = np.histogram(data, bins=bin_edges, density=True)
             hist = enstat.histogram.from_data(data, bin_edges=bin_edges)
+            self.assertTrue(np.allclose(hist.count, c))
+            self.assertTrue(np.allclose(hist.density, p))
+
+    def test_density_random_binning(self):
+
+        data = np.random.random([1001])
+
+        for mode in ["equal", "log", "uniform", "voronoi"]:
+
+            hist = enstat.histogram.from_data(data, bins=50, mode=mode)
+            c, _ = np.histogram(data, bins=hist.bin_edges, density=False)
+            p, _ = np.histogram(data, bins=hist.bin_edges, density=True)
+            self.assertTrue(np.all(hist.count == c))
             self.assertTrue(np.allclose(hist.density, p))
 
     def test_mid(self):
@@ -48,6 +69,8 @@ class Test_accumulate(unittest.TestCase):
 
         data = np.random.random([100, 100])
         bin_edges = np.linspace(0, 1, 21)
+
+        c, _ = np.histogram(data.ravel(), bins=bin_edges, density=False)
         p, _ = np.histogram(data.ravel(), bins=bin_edges, density=True)
 
         hist = enstat.histogram(bin_edges=bin_edges)
@@ -58,7 +81,31 @@ class Test_accumulate(unittest.TestCase):
         self.assertEqual(hist.count_left, 0)
         self.assertEqual(hist.count_right, 0)
 
+        self.assertTrue(np.all(hist.count == c))
         self.assertTrue(np.allclose(hist.density, p))
+
+    def test_accumulate_bin_edges(self):
+
+        data = np.random.random([100, 100])
+
+        for mode in ["equal", "log", "uniform", "voronoi"]:
+
+            hist = enstat.histogram.from_data(data.ravel(), bins=51, mode=mode)
+            bin_edges = np.copy(hist.bin_edges)
+
+            c, _ = np.histogram(data.ravel(), bins=bin_edges, density=False)
+            p, _ = np.histogram(data.ravel(), bins=bin_edges, density=True)
+
+            hist = enstat.histogram(bin_edges=bin_edges)
+
+            for i in range(data.shape[0]):
+                hist += data[i, :]
+
+            self.assertEqual(hist.count_left, 0)
+            self.assertEqual(hist.count_right, 0)
+
+            self.assertTrue(np.all(hist.count == c))
+            self.assertTrue(np.allclose(hist.density, p))
 
 
 class Test_strip(unittest.TestCase):
