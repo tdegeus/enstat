@@ -7,4 +7,5 @@ html_theme = "furo"
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
+    "sphinx_mdinclude",
 ]

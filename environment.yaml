@@ -4,3 +4,4 @@ dependencies:
 - furo
 - numpy
 - python
+- sphinx-mdinclude
