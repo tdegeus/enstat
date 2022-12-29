@@ -10,22 +10,17 @@ Documentation: [enstat.readthedocs.io](https://enstat.readthedocs.io)
 ## Overview
 
 *enstat* is a library to facilitate the computation of ensemble averages
-(and their standard deviation and variance).
-The key feature is that a class stored the sum of the first and second statistical moments
-and the number of samples,
-such that adding a sample can be done trivially, while giving access to the mean etc.
-at all times.
+(and their variances) or histograms.
 
-*enstat* allows you to compute the average (and variance) or the histogram of chunked data,
-without the need to load all data at once.
-For the average (and variance) this is done by keeping the sum of the first (and second)
-statistical moment in memory, together with the normalisation.
-For the histogram, the bins are updated for every 'chunk' (sample).
-A common practical application is computing the average of an ensemble of realisations.
+The key feature is that a class stores the sum of the first and second statistical moments
+and the number of samples.
+This gives access to the mean (and variance) at all times, while you can keep adding samples.
+
+For the histogram something similar holds, but this time the count per bin in stored.
 
 ### Ensemble average
 
-Suppose that we have 100 realisations each with 1000 blocks, and we want to know the ensemble
+Suppose that we have 100 realisations each with 1000 'blocks', and we want to know the ensemble
 average of each block:
 
 ```python
@@ -38,11 +33,27 @@ for realisation in range(100):
     sample = np.random.random(1000)
     ensemble += sample
 
-mean = ensemble.mean()
-print(mean.shape)
+print(ensemble.mean())
 ```
 
-which outputs ``[1000]``.
+### Ensemble histogram
+
+Same example, but now we want the histogram for a number of pre-defined bins:
+```python
+import enstat
+
+bin_edges = np.linspace(0, 1, 11)
+hist = enstat.histogram(bin_edges=bin_edges)
+
+for realisation in range(100):
+
+    sample = np.random.random(1000)
+    hist += sample
+
+print(hist.p)
+```
+
+which prints the probability density of each bin (so list of values around `0.1` for these bins).
 
 ## Installation
 
