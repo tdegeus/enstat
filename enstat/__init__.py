@@ -20,19 +20,35 @@ class scalar:
     *   :py:attr:`scalar.first`: Sum of the first statistical moment.
     *   :py:attr:`scalar.second`: Sum of the second statistical moment.
     *   :py:attr:`scalar.norm`: Number of samples.
-
-    To continue an old average by specifying:
-
-    :param float first: Sum of the first moment.
-    :param float second: Sum of the second moment.
-    :param int norm: Number of samples.
     """
 
-    def __init__(self, first: float = 0, second: float = 0, norm: float = 0):
+    def __init__(self):
 
-        self.first = first
-        self.second = second
-        self.norm = norm
+        self.first = 0.0
+        self.second = 0.0
+        self.norm = 0.0
+
+    def __iter__(self):
+
+        yield "first", self.first
+        yield "second", self.second
+        yield "norm", self.norm
+
+    @classmethod
+    def restore(cls, first: float = 0, second: float = 0, norm: float = 0):
+        """
+        Restore previous data.
+
+        :param float first: Sum of the first moment.
+        :param float second: Sum of the second moment.
+        :param int norm: Number of samples.
+        """
+
+        ret = cls()
+        ret.first = first
+        ret.second = second
+        ret.norm = norm
+        return ret
 
     def __add__(self, datum: float):
 
@@ -119,10 +135,6 @@ class static:
     :param dtype:
         The type of the data.
         If not specified it is determined form the first sample.
-
-    :param first: Continued computation: Sum of the first moment.
-    :param second: Continued computation: Sum of the second moment.
-    :param norm: Continued computation: Number of samples (integer).
     """
 
     def __init__(
@@ -130,32 +142,55 @@ class static:
         compute_variance: bool = True,
         shape: tuple[int] = None,
         dtype: DTypeLike = np.float64,
-        first: ArrayLike = None,
-        second: ArrayLike = None,
-        norm: ArrayLike = None,
     ):
 
         self.compute_variance = compute_variance
-        self.norm = norm
-        self.first = first
-        self.second = second
-
-        if norm is not None:
-            assert first is not None
-            assert second is not None or not compute_variance
+        self.norm = None
+        self.first = None
+        self.second = None
 
         if shape is None:
             return
 
+        self.norm = np.zeros(shape, np.int64)
+        self.first = np.zeros(shape, dtype)
+        if compute_variance:
+            self.second = np.zeros(shape, dtype)
+
+    def __iter__(self):
+
+        yield "first", self.first
+        yield "second", self.second
+        yield "norm", self.norm
+
+    @classmethod
+    def restore(
+        cls,
+        first: ArrayLike = None,
+        second: ArrayLike = None,
+        norm: ArrayLike = None,
+    ):
+        """
+        Restore previous data.
+
+        :param first: Continued computation: Sum of the first moment.
+        :param second: Continued computation: Sum of the second moment.
+        :param norm: Continued computation: Number of samples (integer).
+        """
+
         if norm is not None:
-            assert shape == norm.shape
-            assert shape == second.shape
-            assert shape == norm.shape
-        else:
-            self.norm = np.zeros(shape, np.int64)
-            self.first = np.zeros(shape, dtype)
-            if compute_variance:
-                self.second = np.zeros(shape, dtype)
+
+            assert first is not None
+            assert first.shape == norm.shape
+
+            if second is not None:
+                assert second.shape == norm.shape
+
+        ret = cls()
+        ret.first = first
+        ret.second = second
+        ret.norm = norm
+        return ret
 
     def _allocate(self, shape, dtype):
 
@@ -192,7 +227,7 @@ class static:
         :return: Ensemble average.
         """
 
-        return scalar(
+        return scalar.restore(
             first=np.sum(self.first),
             second=np.sum(self.second),
             norm=np.sum(self.norm),
@@ -332,10 +367,6 @@ class dynamic1d(static):
     :param dtype:
         The type of the data.
         If not specified it is determined form the first sample.
-
-    :param first: Continued computation: Sum of the first moment.
-    :param second: Continued computation: Sum of the second moment.
-    :param norm: Continued computation: Number of samples (integer).
     """
 
     def __init__(
@@ -343,17 +374,11 @@ class dynamic1d(static):
         compute_variance: bool = True,
         size: int = None,
         dtype: DTypeLike = np.float64,
-        first: ArrayLike = None,
-        second: ArrayLike = None,
-        norm: ArrayLike = None,
     ):
         super().__init__(
             compute_variance=compute_variance,
             shape=(size,) if size is not None else None,
             dtype=dtype,
-            first=first,
-            second=second,
-            norm=norm,
         )
 
     def _expand(self, size: int):

@@ -216,6 +216,72 @@ class Test_defaultdict(unittest.TestCase):
         self.assertTrue(average["b"].shape == b.shape[1:])
 
 
+class Test_restore(unittest.TestCase):
+    """
+    Restore existing average.
+    """
+
+    def test_scalar(self):
+
+        data = np.random.random(100)
+        average = enstat.scalar()
+
+        for i in data:
+            average += i
+
+        restored = enstat.scalar.restore(**dict(average))
+
+        self.assertTrue(np.isclose(average.first, restored.first))
+        self.assertTrue(np.isclose(average.second, restored.second))
+        self.assertTrue(average.norm == restored.norm)
+
+        self.assertTrue(np.isclose(np.mean(data), average.mean()))
+        self.assertTrue(np.isclose(np.std(data), average.std(), rtol=5e-1, atol=1e-3))
+
+        self.assertTrue(np.isclose(np.mean(data), restored.mean()))
+        self.assertTrue(np.isclose(np.std(data), restored.std(), rtol=5e-1, atol=1e-3))
+
+    def test_static(self):
+
+        data = np.random.random(31 * 50 * 11).reshape(31, 50, 11)
+        average = enstat.static()
+
+        for i in range(data.shape[0]):
+            average += data[i, ...]
+
+        restored = enstat.static.restore(**dict(average))
+
+        self.assertTrue(np.allclose(average.first, restored.first))
+        self.assertTrue(np.allclose(average.second, restored.second))
+        self.assertTrue(np.all(average.norm == restored.norm))
+
+        self.assertTrue(np.allclose(np.mean(data, axis=0), average.mean()))
+        self.assertTrue(np.allclose(np.std(data, axis=0), average.std(), rtol=5e-1, atol=1e-3))
+
+        self.assertTrue(np.allclose(np.mean(data, axis=0), restored.mean()))
+        self.assertTrue(np.allclose(np.std(data, axis=0), restored.std(), rtol=5e-1, atol=1e-3))
+
+    def test_dynamic1d(self):
+
+        data = np.random.random(31 * 50).reshape(31, 50)
+        average = enstat.dynamic1d()
+
+        for i in data:
+            average += i
+
+        restored = enstat.dynamic1d.restore(**dict(average))
+
+        self.assertTrue(np.allclose(average.first, restored.first))
+        self.assertTrue(np.allclose(average.second, restored.second))
+        self.assertTrue(np.all(average.norm == restored.norm))
+
+        self.assertTrue(np.allclose(np.mean(data, axis=0), average.mean()))
+        self.assertTrue(np.allclose(np.std(data, axis=0), average.std(), rtol=5e-1, atol=1e-3))
+
+        self.assertTrue(np.allclose(np.mean(data, axis=0), restored.mean()))
+        self.assertTrue(np.allclose(np.std(data, axis=0), restored.std(), rtol=5e-1, atol=1e-3))
+
+
 if __name__ == "__main__":
 
     unittest.main()
