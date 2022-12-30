@@ -175,7 +175,7 @@ class Test_merge(unittest.TestCase):
         bin_edges = [0, 1, 2, 3, 4, 5]
         count = [1, 2, 1, 2, 3]
 
-        hist = enstat.histogram(bin_edges=bin_edges, count=count)
+        hist = enstat.histogram.restore(bin_edges=bin_edges, count=count)
         hist.merge_right([0, 2])
 
         self.assertEqual([0, 2, 4, 5], hist.bin_edges.tolist())
@@ -186,7 +186,7 @@ class Test_merge(unittest.TestCase):
         bin_edges = [0, 1, 2, 3, 4, 5]
         count = [1, 2, 1, 2, 3]
 
-        hist = enstat.histogram(bin_edges=bin_edges, count=count)
+        hist = enstat.histogram.restore(bin_edges=bin_edges, count=count)
         hist.merge_right([0])
 
         self.assertEqual([0, 2, 3, 4, 5], hist.bin_edges.tolist())
@@ -197,7 +197,7 @@ class Test_merge(unittest.TestCase):
         bin_edges = [0, 1, 2, 3, 4, 5]
         count = [1, 2, 1, 2, 3]
 
-        hist = enstat.histogram(bin_edges=bin_edges, count=count)
+        hist = enstat.histogram.restore(bin_edges=bin_edges, count=count)
         hist.merge_right([-1])
 
         self.assertEqual(bin_edges, hist.bin_edges.tolist())
@@ -208,7 +208,7 @@ class Test_merge(unittest.TestCase):
         bin_edges = [0, 1, 2, 3, 4, 5]
         count = [1, 2, 1, 2, 3]
 
-        hist = enstat.histogram(bin_edges=bin_edges, count=count)
+        hist = enstat.histogram.restore(bin_edges=bin_edges, count=count)
         hist.merge_left([0, 2])
 
         self.assertEqual([0, 1, 3, 4, 5], hist.bin_edges.tolist())
@@ -219,7 +219,7 @@ class Test_merge(unittest.TestCase):
         bin_edges = [0, 1, 2, 3, 4, 5]
         count = [1, 2, 1, 2, 3]
 
-        hist = enstat.histogram(bin_edges=bin_edges, count=count)
+        hist = enstat.histogram.restore(bin_edges=bin_edges, count=count)
         hist.merge_left([0])
 
         self.assertEqual(bin_edges, hist.bin_edges.tolist())
@@ -230,7 +230,7 @@ class Test_merge(unittest.TestCase):
         bin_edges = [0, 1, 2, 3, 4, 5]
         count = [1, 2, 1, 2, 3]
 
-        hist = enstat.histogram(bin_edges=bin_edges, count=count)
+        hist = enstat.histogram.restore(bin_edges=bin_edges, count=count)
         hist.merge_left([-1])
 
         self.assertEqual([0, 1, 2, 3, 5], hist.bin_edges.tolist())
@@ -241,7 +241,7 @@ class Test_merge(unittest.TestCase):
         bin_edges = [0, 1, 2, 2.1, 3, 3.1, 4, 5]
         count = [1, 2, 1, 1, 1, 2, 3]
 
-        hist = enstat.histogram(bin_edges=bin_edges, count=count)
+        hist = enstat.histogram.restore(bin_edges=bin_edges, count=count)
         hist.as_integer()
 
         self.assertEqual([0, 1, 2, 3, 4, 5], hist.bin_edges.tolist())
@@ -252,7 +252,7 @@ class Test_merge(unittest.TestCase):
         bin_edges = [0, 0.9, 1, 2, 3, 4, 5]
         count = [1, 2, 1, 1, 2, 3]
 
-        hist = enstat.histogram(bin_edges=bin_edges, count=count)
+        hist = enstat.histogram.restore(bin_edges=bin_edges, count=count)
         hist.as_integer()
 
         self.assertEqual([0, 1, 2, 3, 4, 5], hist.bin_edges.tolist())
@@ -263,7 +263,7 @@ class Test_merge(unittest.TestCase):
         bin_edges = [0, 1, 2, 3, 4, 4.5, 5]
         count = [1, 2, 1, 2, 1, 3]
 
-        hist = enstat.histogram(bin_edges=bin_edges, count=count)
+        hist = enstat.histogram.restore(bin_edges=bin_edges, count=count)
         hist.as_integer()
 
         self.assertEqual([0, 1, 2, 3, 4, 5], hist.bin_edges.tolist())
@@ -280,7 +280,7 @@ class Test_squash(unittest.TestCase):
         bin_edges = [0, 1, 2, 3, 4, 6]
         count = [1, 2, 1, 2, 3]
 
-        hist = enstat.histogram(bin_edges=bin_edges, count=count)
+        hist = enstat.histogram.restore(bin_edges=bin_edges, count=count)
         hist.squash(2)
 
         self.assertEqual(0, hist.count_left)
@@ -294,7 +294,7 @@ class Test_squash(unittest.TestCase):
         bin_edges = [0, 1, 2, 3, 4, 6]
         count = [1, 2, 1, 2, 3]
 
-        hist = enstat.histogram(bin_edges=bin_edges, count=count)
+        hist = enstat.histogram.restore(bin_edges=bin_edges, count=count)
         hist.squash(3)
 
         self.assertEqual(0, hist.count_left)
@@ -303,19 +303,19 @@ class Test_squash(unittest.TestCase):
         self.assertEqual([4, 5], hist.count.tolist())
         self.assertEqual([0, 3, 6], hist.bin_edges.tolist())
 
-        hist = enstat.histogram(bin_edges=bin_edges, count=count)
+        hist = enstat.histogram.restore(bin_edges=bin_edges, count=count)
         hist.squash(4)
 
         self.assertEqual([6, 3], hist.count.tolist())
         self.assertEqual([0, 4, 6], hist.bin_edges.tolist())
 
-        hist = enstat.histogram(bin_edges=bin_edges, count=count)
+        hist = enstat.histogram.restore(bin_edges=bin_edges, count=count)
         hist.squash(5)
 
         self.assertEqual([9], hist.count.tolist())
         self.assertEqual([0, 6], hist.bin_edges.tolist())
 
-        hist = enstat.histogram(bin_edges=bin_edges, count=count)
+        hist = enstat.histogram.restore(bin_edges=bin_edges, count=count)
         hist.squash(6)
 
         self.assertEqual([9], hist.count.tolist())
@@ -326,7 +326,7 @@ class Test_squash(unittest.TestCase):
         bin_edges = [-1, 0, 1, 2, 3, 4, 6, 7]
         count = [0, 1, 2, 1, 2, 3, 0]
 
-        hist = enstat.histogram(bin_edges=bin_edges, count=count)
+        hist = enstat.histogram.restore(bin_edges=bin_edges, count=count)
         hist.strip()
         hist.squash(2)
 
@@ -384,6 +384,31 @@ class Test_histogram_bin_edges_voronoi(unittest.TestCase):
         self.assertEqual(hist.count_right, 0)
 
         self.assertTrue(np.allclose(hist.bin_edges, np.array([0.5, 1.5, 2.5, 3.5, 4.5, 5.5, 7, 9])))
+
+
+class Test_histogram_restore(unittest.TestCase):
+    """
+    Restore a previous result.
+    """
+
+    def test_basic(self):
+
+        data = np.random.random([1001])
+
+        r = np.random.random([30])
+        bin_edges = np.min(data) + np.cumsum(0.1 * r)
+        bin_edges = bin_edges[bin_edges < np.max(data)]
+        bin_edges_full = np.hstack((np.min(data), bin_edges, np.max(data)))
+
+        hist = enstat.histogram.from_data(data, bin_edges=bin_edges, bound_error="norm")
+        hist_full = enstat.histogram.from_data(data, bin_edges=bin_edges_full, bound_error="raise")
+        restored = enstat.histogram.restore(**dict(hist))
+
+        self.assertTrue(np.all(hist.count == hist_full.count[1:-1]))
+        self.assertTrue(np.allclose(hist.p, hist_full.p[1:-1]))
+
+        self.assertTrue(np.all(hist.count == restored.count))
+        self.assertTrue(np.allclose(hist.p, restored.p))
 
 
 if __name__ == "__main__":
