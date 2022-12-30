@@ -409,8 +409,6 @@ class histogram:
         - ``"raise"``: raise an error
         - ``"ignore"``: ignore the data that are out of range
         - ``"norm"``: change the normalisation of the density
-
-    :param count: The initial count (default: zeros).
     """
 
     def __init__(
@@ -430,12 +428,70 @@ class histogram:
         self.count_right = 0
         self.bound_left = bin_edges[0]
         self.bound_right = bin_edges[-1]
+        self.count = np.zeros((len(bin_edges) - 1), np.uint64)
 
-        if count is not None:
-            assert len(count) == len(bin_edges) - 1
-            self.count = np.array(count).astype(np.uint64)
-        else:
-            self.count = np.zeros((len(bin_edges) - 1), np.uint64)
+    def __iter__(self):
+
+        yield "bin_edges", self.bin_edges
+        yield "count", self.count
+        yield "count_left", self.count_left
+        yield "count_right", self.count_right
+        yield "bound_left", self.bound_left
+        yield "bound_right", self.bound_right
+        yield "right", self.right
+        yield "bound_error", self.bound_error
+
+    @classmethod
+    def restore(
+        cls,
+        bin_edges: ArrayLike,
+        count: ArrayLike,
+        count_left: int = 0,
+        count_right: int = 0,
+        bound_left: float = None,
+        bound_right: float = None,
+        bound_error: str = "raise",
+        right: bool = False,
+    ):
+        """
+        Restore from a previous result::
+
+            hist = enstat.histogram...
+            state = dict(hist)
+
+            restored = enstat.histogram.from_histogram(**state)
+
+        :param bin_edges: The bin-edges.
+        :param count: The count.
+        :param count_left: Number of items below the left bound.
+        :param count_right: Number of items above the right bound.
+        :param bound_left: The minimum value below the left bound.
+        :param bound_right: The maximum value above the right bound.
+        :param bound_error: What to do if a sample falls out of the bin range.
+        :param right: Whether the bin includes the right edge (or the left edge) see numpy.digitize.
+        """
+
+        ret = cls(
+            bin_edges=bin_edges,
+            right=right,
+            bound_error=bound_error,
+        )
+
+        assert len(count) == len(bin_edges) - 1
+        ret.count = np.array(count).astype(np.uint64)
+
+        ret.count_left = count_left
+        ret.count_right = count_right
+
+        if bound_left is not None:
+            assert bound_left <= bin_edges[0]
+            ret.bound_left = bound_left
+
+        if bound_right is not None:
+            assert bound_right >= bin_edges[-1]
+            ret.bound_right = bound_right
+
+        return ret
 
     @classmethod
     def from_data(
