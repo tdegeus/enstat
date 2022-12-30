@@ -16,11 +16,11 @@ The key feature is that a class stores the sum of the first and second statistic
 and the number of samples.
 This gives access to the mean (and variance) at all times, while you can keep adding samples.
 
-For the histogram something similar holds, but this time the count per bin in stored.
+For the histogram something similar holds, but this time the count per bin is stored.
 
 ### Ensemble average
 
-Suppose that we have 100 realisations each with 1000 'blocks', and we want to know the ensemble
+Suppose that we have 100 realisations, each with 1000 'blocks', and we want to know the ensemble
 average of each block:
 
 ```python
@@ -38,7 +38,7 @@ print(ensemble.mean())
 
 ### Ensemble histogram
 
-Same example, but now we want the histogram for a number of pre-defined bins:
+Same example, but now we want the histogram for pre-defined bins:
 ```python
 import enstat
 
@@ -54,6 +54,26 @@ print(hist.p)
 ```
 
 which prints the probability density of each bin (so list of values around `0.1` for these bins).
+
+### Histogram: bins and plotting
+
+The `histogram` class contains two nice features.
+
+1.  It has several bin algorithms that matplotlib does not have.
+2.  It can be used for plotting with an ultra-sort interface.
+
+```python
+import enstat
+import matplotlib.pyplot as plt
+
+data = np.random.random(1000)
+hist = enstat.histogram.from_data(data, bins=10, mode="log")
+
+fig, ax = plt.subplots()
+ax.plot(hist.x, hist.p)
+plt.show()
+```
+You can even use `ax.plot(*hist.plot)`.
 
 ## Installation
 
