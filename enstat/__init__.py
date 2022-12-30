@@ -441,7 +441,6 @@ class histogram:
         bin_edges: ArrayLike,
         right: bool = False,
         bound_error: str = "raise",
-        count: ArrayLike = None,
     ):
 
         assert np.all(np.diff(bin_edges) > 0) or np.all(np.diff(bin_edges) < 0)
