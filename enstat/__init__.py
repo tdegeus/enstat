@@ -404,17 +404,32 @@ class histogram:
 
     :param bin_edges: The bin-edges.
     :param right: Whether the bin includes the right edge (or the left edge) see numpy.digitize.
+    :param bound_error: What to do if a sample falls out of the bin range:
+
+        - ``"raise"``: raise an error
+        - ``"ignore"``: ignore the data that are out of range
+        - ``"norm"``: change the normalisation of the density
+
     :param count: The initial count (default: zeros).
     """
 
-    def __init__(self, bin_edges: ArrayLike, right: bool = False, count: ArrayLike = None):
+    def __init__(
+        self,
+        bin_edges: ArrayLike,
+        right: bool = False,
+        bound_error: str = "raise",
+        count: ArrayLike = None,
+    ):
 
         assert np.all(np.diff(bin_edges) > 0) or np.all(np.diff(bin_edges) < 0)
 
         self.right = right
         self.bin_edges = np.array(bin_edges).astype(np.float64)
+        self.bound_error = bound_error
         self.count_left = 0
         self.count_right = 0
+        self.bound_left = bin_edges[0]
+        self.bound_right = bin_edges[-1]
 
         if count is not None:
             assert len(count) == len(bin_edges) - 1
@@ -432,6 +447,7 @@ class histogram:
         min_width: float = None,
         integer: bool = False,
         bin_edges: ArrayLike = None,
+        bound_error: str = "raise",
     ):
         r"""
         Construct a histogram from data.
@@ -455,6 +471,12 @@ class histogram:
 
         :param bin_edges: Specify the bin-edges (overrides ``bins`` and ``mode``).
 
+        :param bound_error: What to do if a sample falls out of the bin range:
+
+            - ``"raise"``: raise an error
+            - ``"ignore"``: ignore the data that are out of range
+            - ``"norm"``: change the normalisation of the density
+
         :return: The :py:class:`Histogram` object.
         """
 
@@ -476,7 +498,7 @@ class histogram:
         bin_edges = np.array(bin_edges)
         bin_edges[0] -= np.finfo(bin_edges.dtype).eps
         bin_edges[-1] += np.finfo(bin_edges.dtype).eps
-        return cls(bin_edges, right=True).add_sample(data)
+        return cls(bin_edges, right=True, bound_error=bound_error).add_sample(data)
 
     def strip(self, min_count: int = 0):
         """
@@ -618,9 +640,24 @@ class histogram:
         """
 
         bin = np.digitize(data, self.bin_edges, self.right) - 1
-        self.count_left += np.sum(bin < 0)
-        self.count_right += np.sum(bin >= self.count.size)
-        bin = bin[np.logical_and(bin >= 0, bin < self.count.size)]
+
+        left = bin < 0
+        right = bin >= self.count.size
+        nleft = np.sum(left)
+        nright = np.sum(right)
+        self.count_left += nleft
+        self.count_right += nright
+
+        if nleft:
+            self.bound_left = min([self.bound_left, np.min(data[left])])
+
+        if nright:
+            self.bound_right = max([self.bound_right, np.max(data[right])])
+
+        if self.bound_error == "raise" and (nleft or nright):
+            raise ValueError("Data out of bin range")
+
+        bin = bin[np.logical_and(~left, ~right)]
         self.count += np.bincount(bin, minlength=self.count.size).astype(np.uint64)
         return self
 
@@ -639,7 +676,12 @@ class histogram:
         """
 
         count = self.count.astype(np.float64)
-        return count / (np.diff(self.bin_edges) * np.sum(count))
+        norm = np.sum(count)
+
+        if self.bound_error == "norm":
+            norm += self.count_left + self.count_right
+
+        return count / (np.diff(self.bin_edges) * norm)
 
     @property
     def p(self) -> ArrayLike:

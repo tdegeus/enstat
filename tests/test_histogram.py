@@ -34,7 +34,7 @@ class Test_norm(unittest.TestCase):
 
             c, _ = np.histogram(data, bins=bin_edges, density=False)
             p, _ = np.histogram(data, bins=bin_edges, density=True)
-            hist = enstat.histogram.from_data(data, bin_edges=bin_edges)
+            hist = enstat.histogram.from_data(data, bin_edges=bin_edges, bound_error="ignore")
             self.assertTrue(np.allclose(hist.count, c))
             self.assertTrue(np.allclose(hist.density, p))
 
@@ -49,6 +49,21 @@ class Test_norm(unittest.TestCase):
             p, _ = np.histogram(data, bins=hist.bin_edges, density=True)
             self.assertTrue(np.all(hist.count == c))
             self.assertTrue(np.allclose(hist.density, p))
+
+    def test_bound_error_norm(self):
+
+        data = np.random.random([1001])
+
+        r = np.random.random([30])
+        bin_edges = np.min(data) + np.cumsum(0.1 * r)
+        bin_edges = bin_edges[bin_edges < np.max(data)]
+        bin_edges_full = np.hstack((np.min(data), bin_edges, np.max(data)))
+
+        hist = enstat.histogram.from_data(data, bin_edges=bin_edges, bound_error="norm")
+        hist_full = enstat.histogram.from_data(data, bin_edges=bin_edges_full, bound_error="raise")
+
+        self.assertTrue(np.all(hist.count == hist_full.count[1:-1]))
+        self.assertTrue(np.allclose(hist.p, hist_full.p[1:-1]))
 
     def test_mid(self):
 
