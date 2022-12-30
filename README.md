@@ -59,21 +59,23 @@ which prints the probability density of each bin (so list of values around `0.1`
 
 The `histogram` class contains two nice features.
 
-1.  It has several bin algorithms that matplotlib does not have.
-2.  It can be used for plotting with an ultra-sort interface.
+1.  It has several bin algorithms that NumPy does not have.
 
-```python
-import enstat
-import matplotlib.pyplot as plt
+2.  It can be used for plotting with an ultra-sort interface, for example:
 
-data = np.random.random(1000)
-hist = enstat.histogram.from_data(data, bins=10, mode="log")
+    ```python
+    import enstat
+    import matplotlib.pyplot as plt
 
-fig, ax = plt.subplots()
-ax.plot(hist.x, hist.p)
-plt.show()
-```
-You can even use `ax.plot(*hist.plot)`.
+    data = np.random.random(1000)
+    hist = enstat.histogram.from_data(data, bins=10, mode="log")
+
+    fig, ax = plt.subplots()
+    ax.plot(hist.x, hist.p)
+    plt.show()
+    ```
+
+    You can even use `ax.plot(*hist.plot)`.
 
 ## Installation
 
@@ -86,7 +88,7 @@ You can even use `ax.plot(*hist.plot)`.
 -   Using PyPi
 
     ```bash
-    pip install enstat
+    python -m pip install enstat
     ```
 
 ## Disclaimer
