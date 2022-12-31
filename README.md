@@ -9,22 +9,20 @@ Documentation: [enstat.readthedocs.io](https://enstat.readthedocs.io)
 
 ## Overview
 
-*enstat* is a library to facilitate the computation of ensemble averages
-(and their variances) or histograms.
+*enstat* is a library to facilitate the computation of ensemble averages (and their variances) or histograms.
 
-The key feature is that a class stores the sum of the first and second statistical moments
-and the number of samples.
+The key feature is that a class stores the sum of the first and second statistical moments and the number of samples.
 This gives access to the mean (and variance) at all times, while you can keep adding samples.
 
 For the histogram something similar holds, but this time the count per bin is stored.
 
 ### Ensemble average
 
-Suppose that we have 100 realisations, each with 1000 'blocks', and we want to know the ensemble
-average of each block:
+Suppose that we have 100 realisations, each with 1000 'blocks', and we want to know the ensemble average of each block:
 
 ```python
 import enstat
+import numpy as np
 
 ensemble = enstat.static()
 
@@ -36,11 +34,34 @@ for realisation in range(100):
 print(ensemble.mean())
 ```
 
+which will print a list of 1000 values, each around `0.5`.
+This is the equivalent of
+
+```python
+import numpy as np
+
+container = np.empty((100, 1000))
+
+for realisation in range(100):
+
+    sample = np.random.random(1000)
+    container[realisation, :] = sample
+
+print(np.mean(container, axis=0))
+```
+
+The key difference is that *enstat* only requires you to have `4 * N` values in memory for a sample of size `N`: the sample itself, the sums of the first and second moment, and the normalisation.
+Instead the solution with the container uses much more memory.
+
+A nice feature is also that you can keep adding samples to `ensemble`.
+You can even store it and continue later.
+
 ### Ensemble histogram
 
-Same example, but now we want the histogram for pre-defined bins:
+Same example, but now we want the histogram for predefined bins:
 ```python
 import enstat
+import numpy as np
 
 bin_edges = np.linspace(0, 1, 11)
 hist = enstat.histogram(bin_edges=bin_edges)
@@ -55,9 +76,7 @@ print(hist.p)
 
 which prints the probability density of each bin (so list of values around `0.1` for these bins).
 
-### Histogram: bins and plotting
-
-The `histogram` class contains two nice features.
+The `histogram` class contains two additional nice features.
 
 1.  It has several bin algorithms that NumPy does not have.
 
@@ -65,6 +84,7 @@ The `histogram` class contains two nice features.
 
     ```python
     import enstat
+    import numpy as np
     import matplotlib.pyplot as plt
 
     data = np.random.random(1000)
@@ -93,8 +113,7 @@ The `histogram` class contains two nice features.
 
 ## Disclaimer
 
-This library is free to use under the
-[MIT license](https://github.com/tdegeus/enstat/blob/master/LICENSE).
+This library is free to use under the [MIT license](https://github.com/tdegeus/enstat/blob/master/LICENSE).
 Any additions are very much appreciated.
 As always, the code comes with no guarantee.
 None of the developers can be held responsible for possible mistakes.
