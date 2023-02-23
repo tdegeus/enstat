@@ -27,7 +27,6 @@ def histogram_bin_edges(data: ArrayLike, bins: int, mode: str, min_count: int = 
         return bin_edges
 
     if mode == "uniform":
-
         if min_count and bins is None:
             if not isinstance(min_count, int):
                 raise OSError('"min_count" must be an integer number')
@@ -44,7 +43,6 @@ def histogram_bin_edges(data: ArrayLike, bins: int, mode: str, min_count: int = 
         return bin_edges
 
     if mode == "voronoi":
-
         mid_points = np.unique(data)
         diff = np.diff(mid_points)
         bin_edges = mid_points + np.hstack((0.5 * diff, 0.5 * diff[-1]))
@@ -63,7 +61,6 @@ def histogram_bin_edges_minwidth(bin_edges: ArrayLike, min_width: int) -> ArrayL
     """
 
     while True:
-
         idx = np.where(np.diff(bin_edges) < min_width)[0]
 
         if len(idx) == 0:
@@ -94,7 +91,6 @@ def histogram_bin_edges_mincount(
     assert isinstance(min_count, int)
 
     while True:
-
         count, _ = np.histogram(data, bins=bin_edges, density=False)
 
         idx = np.where(count < min_count)[0]

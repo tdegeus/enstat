@@ -23,13 +23,11 @@ class scalar:
     """
 
     def __init__(self):
-
         self.first = 0.0
         self.second = 0.0
         self.norm = 0.0
 
     def __iter__(self):
-
         yield "first", self.first
         yield "second", self.second
         yield "norm", self.norm
@@ -51,7 +49,6 @@ class scalar:
         return ret
 
     def __add__(self, datum: float):
-
         self.add_sample(datum)
         return self
 
@@ -143,7 +140,6 @@ class static:
         shape: tuple[int] = None,
         dtype: DTypeLike = np.float64,
     ):
-
         self.compute_variance = compute_variance
         self.norm = None
         self.first = None
@@ -158,7 +154,6 @@ class static:
             self.second = np.zeros(shape, dtype)
 
     def __iter__(self):
-
         yield "first", self.first
         yield "second", self.second
         yield "norm", self.norm
@@ -179,7 +174,6 @@ class static:
         """
 
         if norm is not None:
-
             assert first is not None
             assert first.shape == norm.shape
 
@@ -193,7 +187,6 @@ class static:
         return ret
 
     def _allocate(self, shape, dtype):
-
         self.norm = np.zeros(shape, np.int64)
         self.first = np.zeros(shape, dtype)
         if self.compute_variance:
@@ -234,7 +227,6 @@ class static:
         )
 
     def __add__(self, data: ArrayLike):
-
         self.add_sample(data)
         return self
 
@@ -340,7 +332,6 @@ class static:
 
 
 def _expand_array1d(data, size):
-
     tmp = np.zeros((size), data.dtype)
     tmp[: data.size] = data
     return tmp
@@ -382,7 +373,6 @@ class dynamic1d(static):
         )
 
     def _expand(self, size: int):
-
         if size <= self.first.size:
             return
 
@@ -393,12 +383,10 @@ class dynamic1d(static):
             self.second = _expand_array1d(self.second, size)
 
     def __add__(self, data: ArrayLike):
-
         self.add_sample(data)
         return self
 
     def add_sample(self, data: ArrayLike):
-
         assert data.ndim == 1
 
         if self.first is None:
@@ -413,7 +401,6 @@ class dynamic1d(static):
             self.second[: data.size] += data**2
 
     def add_point(self, datum: float | int, index: int):
-
         if self.first is None:
             self._allocate(index + 1, type(datum))
         else:
@@ -442,7 +429,6 @@ class histogram:
         right: bool = False,
         bound_error: str = "raise",
     ):
-
         assert np.all(np.diff(bin_edges) > 0) or np.all(np.diff(bin_edges) < 0)
 
         self.right = right
@@ -455,7 +441,6 @@ class histogram:
         self.count = np.zeros((len(bin_edges) - 1), np.uint64)
 
     def __iter__(self):
-
         yield "bin_edges", self.bin_edges
         yield "count", self.count
         yield "count_left", self.count_left
@@ -709,7 +694,6 @@ class histogram:
         self.right = False
 
     def __add__(self, data: ArrayLike):
-
         self.add_sample(data)
         return self
 

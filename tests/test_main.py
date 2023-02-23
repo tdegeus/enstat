@@ -182,7 +182,6 @@ class Test_defaultdict(unittest.TestCase):
     """
 
     def test_scalar(self):
-
         average = defaultdict(enstat.scalar)
 
         a = np.random.random(50 * 20).reshape(50, 20)
@@ -198,7 +197,6 @@ class Test_defaultdict(unittest.TestCase):
         self.assertTrue(np.isclose(average["b"].mean(), np.mean(b)))
 
     def test_static(self):
-
         average = defaultdict(enstat.static)
 
         a = np.random.random(35 * 50 * 20).reshape(35, 50, 20)
@@ -222,7 +220,6 @@ class Test_restore(unittest.TestCase):
     """
 
     def test_scalar(self):
-
         data = np.random.random(100)
         average = enstat.scalar()
 
@@ -242,7 +239,6 @@ class Test_restore(unittest.TestCase):
         self.assertTrue(np.isclose(np.std(data), restored.std(), rtol=5e-1, atol=1e-3))
 
     def test_static(self):
-
         data = np.random.random(31 * 50 * 11).reshape(31, 50, 11)
         average = enstat.static()
 
@@ -262,7 +258,6 @@ class Test_restore(unittest.TestCase):
         self.assertTrue(np.allclose(np.std(data, axis=0), restored.std(), rtol=5e-1, atol=1e-3))
 
     def test_dynamic1d(self):
-
         data = np.random.random(31 * 50).reshape(31, 50)
         average = enstat.dynamic1d()
 
@@ -283,5 +278,4 @@ class Test_restore(unittest.TestCase):
 
 
 if __name__ == "__main__":
-
     unittest.main()

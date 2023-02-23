@@ -19,7 +19,6 @@ class Scalar:
     """
 
     def __init__(self, first=0, second=0, norm=0):
-
         warnings.warn("Deprecated. Use: enstat.scalar.", DeprecationWarning)
 
         self.m_first = first
@@ -136,7 +135,6 @@ class StaticNd:
         second=None,
         norm=None,
     ):
-
         warnings.warn("Deprecated. Use: enstat.static.", DeprecationWarning)
 
         self.m_compute_variance = compute_variance
@@ -147,7 +145,6 @@ class StaticNd:
         self.m_dtype = dtype
 
     def _allocate(self, data):
-
         if self.m_first is not None:
             assert data.shape == self.m_shape
             return
@@ -267,7 +264,6 @@ class StaticNd:
 
 
 def _expand_array1d(data, size):
-
     tmp = np.zeros((size), data.dtype)
     tmp[: data.size] = data
     return tmp
@@ -308,7 +304,6 @@ class Dynamic1d(StaticNd):
         second=None,
         norm=None,
     ):
-
         warnings.warn("Deprecated. Use: enstat.dynamic1d.", DeprecationWarning)
 
         self.m_compute_variance = compute_variance
@@ -338,7 +333,6 @@ class Dynamic1d(StaticNd):
             self.m_second = np.zeros((self.m_size), self.m_dtype)
 
     def _expand(self, data):
-
         if data.size <= self.m_size:
             return
 
