@@ -15,12 +15,16 @@ def histogram_bin_edges(data: ArrayLike, bins: int, mode: str, min_count: int = 
     """
 
     if mode == "equal":
-
-        return np.linspace(np.min(data), np.max(data), bins + 1)
+        bin_edges = np.linspace(np.min(data), np.max(data), bins + 1)
+        bin_edges[0] = np.min(data)
+        bin_edges[-1] = np.max(data)
+        return bin_edges
 
     if mode == "log":
-
-        return np.logspace(np.log10(np.min(data)), np.log10(np.max(data)), bins + 1)
+        bin_edges = np.logspace(np.log10(np.min(data)), np.log10(np.max(data)), bins + 1)
+        bin_edges[0] = np.min(data)
+        bin_edges[-1] = np.max(data)
+        return bin_edges
 
     if mode == "uniform":
 
