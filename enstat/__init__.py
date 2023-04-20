@@ -513,6 +513,7 @@ class histogram:
         integer: bool = False,
         bin_edges: ArrayLike = None,
         bound_error: str = "raise",
+        roundoff_error: float = 3.0 * np.finfo(np.float64).eps,
     ):
         r"""
         Construct a histogram from data.
@@ -542,6 +543,8 @@ class histogram:
             - ``"ignore"``: ignore the data that are out of range
             - ``"norm"``: change the normalisation of the density
 
+        :param roundoff_error: Extend the first and last bin with this margin.
+
         :return: The :py:class:`Histogram` object.
         """
 
@@ -561,8 +564,8 @@ class histogram:
             bin_edges = detail.histogram_bin_edges_integer(bin_edges)
 
         bin_edges = np.array(bin_edges)
-        bin_edges[0] -= np.finfo(bin_edges.dtype).eps
-        bin_edges[-1] += np.finfo(bin_edges.dtype).eps
+        bin_edges[0] -= roundoff_error
+        bin_edges[-1] += roundoff_error
         return cls(bin_edges, right=True, bound_error=bound_error).add_sample(data)
 
     def strip(self, min_count: int = 0):
@@ -703,7 +706,7 @@ class histogram:
         You can also use the ``+`` operator.
         """
 
-        bin = np.digitize(data, self.bin_edges, self.right) - 1
+        bin = np.digitize(data, self.bin_edges, right=self.right) - 1
 
         left = bin < 0
         right = bin >= self.count.size
