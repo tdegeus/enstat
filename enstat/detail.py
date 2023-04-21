@@ -120,11 +120,9 @@ def histogram_bin_edges_integer(bin_edges: ArrayLike) -> ArrayLike:
     bin_edges = np.array(bin_edges)
     assert bin_edges.size > 1
 
-    i = np.where(np.diff(np.floor(bin_edges)) >= 1)[0]
+    index = np.argwhere(np.diff(np.floor(bin_edges)) >= 1).ravel()
 
-    if i[0] > 0:
-        i[0] = 0
+    if index[0] > 0:
+        index[0] = 0
 
-    i = list(i) + [bin_edges.size - 1]
-
-    return bin_edges[i]
+    return bin_edges[list(index) + [bin_edges.size - 1]]
