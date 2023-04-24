@@ -787,16 +787,25 @@ class binned:
 
         - ``"raise"``: raise an error
         - ``"ignore"``: ignore the data that are out of range
+
+    :param names: The names of the variables to store.
     """
 
-    def __init__(self, bin_edges: ArrayLike, right: bool = False, bound_error: str = "raise"):
-        self.data = []
+    def __init__(
+        self,
+        bin_edges: ArrayLike,
+        right: bool = False,
+        bound_error: str = "raise",
+        names: list[str] = [],
+    ):
         self.hist = histogram(bin_edges, right, bound_error)
+        self.names = names
+        self.data = {name: static(shape=self.hist.bin_edges.size - 1) for name in names}
         if bound_error not in {"raise", "ignore"}:
             raise ValueError(f"Unknown bound_error: {bound_error}")
 
     @classmethod
-    def from_data(cls, *args: ArrayLike, **kwargs):
+    def from_data(cls, *args: ArrayLike, names: list[str] = [], **kwargs):
         r"""
         Construct from data.
 
@@ -809,21 +818,23 @@ class binned:
         """
 
         hist = histogram.from_data(args[0], **kwargs)
-        return cls(hist.bin_edges, right=hist.right, bound_error=hist.bound_error).add_sample(*args)
+        return cls(
+            hist.bin_edges, right=hist.right, bound_error=hist.bound_error, names=names
+        ).add_sample(*args)
 
     def __iter__(self):
         return iter(self.data)
 
     def __getitem__(self, index: int):
-        if hasattr(index, "__len__"):
-            raise ValueError("Multi-dimensional indexing is not supported")
-        return self.data[index]
+        if isinstance(index, str):
+            return self.data[index]
+        return self.data[self.names[index]]
 
     def __add__(self, data: ArrayLike):
         self.add_sample(data)
         return self
 
-    def add_sample(self, *args: ArrayLike):
+    def add_sample(self, *args: ArrayLike, **kwargs: ArrayLike):
         """
         Add a sample.
         If you use only one variable, you can also use the ``+`` operator.
@@ -833,28 +844,35 @@ class binned:
             The binning is done on the first argument and applied to all other arguments.
         """
 
-        if len(args) == 0:
-            raise ValueError("No data given")
+        if len(self.names) == 0:
+            self.names = [i for i in range(len(args))]
+            self.data = {name: static(shape=self.hist.bin_edges.size - 1) for name in self.names}
 
-        for i in range(len(args) - len(self.data)):
-            self.data.append(static(shape=self.hist.bin_edges.size - 1))
+        for i in range(len(args)):
+            name = self.names[i]
+            if name in kwargs:
+                raise ValueError(f"Duplicate argument: {name}")
+            kwargs[name] = args[i]
 
-        bin, keep = self.hist._get_bins(args[0], return_selector=True)
-        args = [np.asarray(arg)[keep] for arg in args]
-        sqr = [arg * arg for arg in args]
+        if len(kwargs) != len(self.names):
+            raise ValueError("Incorrect number of arguments")
 
-        for arg in args:
-            if arg.shape != args[0].shape:
+        bin, keep = self.hist._get_bins(kwargs[self.names[0]], return_selector=True)
+        kwargs = {name: np.asarray(arg)[keep] for name, arg in kwargs.items()}
+        sqr = {name: arg * arg for name, arg in kwargs.items()}
+
+        for name, arg in kwargs.items():
+            if arg.shape != kwargs[self.names[0]].shape:
                 raise ValueError("All arguments must have the same shape")
 
         for ibin in range(np.max(bin) + 1):
             sel = bin == ibin
             if not np.any(sel):
                 continue
-            for i in range(len(args)):
-                self.data[i].first[ibin] += np.sum(args[i][sel])
-                self.data[i].second[ibin] += np.sum(sqr[i][sel])
-                self.data[i].norm[ibin] += np.sum(sel)
+            for name, arg in kwargs.items():
+                self.data[name].first[ibin] += np.sum(kwargs[name][sel])
+                self.data[name].second[ibin] += np.sum(sqr[name][sel])
+                self.data[name].norm[ibin] += np.sum(sel)
 
         return self
 
