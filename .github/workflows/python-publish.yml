@@ -21,10 +21,13 @@ jobs:
       id-token: write
 
     steps:
-    - name: deps
+    - name: Basic GitHub action setup
+      uses: actions/checkout@v3
+
+    - name: Install deps
       run: python -m pip install -U setuptools build wheel
 
-    - name: build
+    - name: Build
       run: python -m build
 
     - name: Publish package distributions to PyPI
