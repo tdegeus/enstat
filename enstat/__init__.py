@@ -701,10 +701,9 @@ class histogram:
         self.add_sample(data)
         return self
 
-    def add_sample(self, data: ArrayLike):
+    def _get_bins(self, data: ArrayLike, return_selector: bool = False) -> np.ndarray[int]:
         """
-        Add a sample to the histogram.
-        You can also use the ``+`` operator.
+        Get the bins for the data, update out-of-range counts.
         """
 
         data = np.asarray(data)
@@ -725,8 +724,18 @@ class histogram:
         if self.bound_error == "raise" and (nleft or nright):
             raise ValueError("Data out of bin range")
 
-        bin = bin[np.logical_and(~left, ~right)]
-        self.count += np.bincount(bin, minlength=self.count.size).astype(np.uint64)
+        if return_selector:
+            keep = np.logical_and(~left, ~right)
+            return bin[keep], keep
+
+        return bin[np.logical_and(~left, ~right)]
+
+    def add_sample(self, data: ArrayLike):
+        """
+        Add a sample to the histogram.
+        You can also use the ``+`` operator.
+        """
+        self.count += np.bincount(self._get_bins(data), minlength=self.count.size).astype(np.uint64)
         return self
 
     @property
@@ -782,65 +791,25 @@ class binned:
 
     def __init__(self, bin_edges: ArrayLike, right: bool = False, bound_error: str = "raise"):
         self.data = []
-        self.right = right
-        self.bin_edges = bin_edges
-        self.bound_error = bound_error
-        self.count_left = 0
-        self.count_right = 0
-        self.bound_left = bin_edges[0]
-        self.bound_right = bin_edges[-1]
-
+        self.hist = histogram(bin_edges, right, bound_error)
         if bound_error not in {"raise", "ignore"}:
             raise ValueError(f"Unknown bound_error: {bound_error}")
 
     @classmethod
-    def from_data(
-        cls,
-        *args: ArrayLike,
-        bins: int = None,
-        mode: str = "equal",
-        min_count: int = None,
-        min_width: float = None,
-        integer: bool = False,
-        bin_edges: ArrayLike = None,
-        bound_error: str = "raise",
-    ):
+    def from_data(cls, *args: ArrayLike, **kwargs):
         r"""
         Construct from data.
 
         :param args:
             Different variables of data to add.
-            The binning is done on the first variable and applied to all other variables.
+            The binning is done on the first argument and applied to all other arguments.
 
-        :param bins: Number of bins.
-        :param mode:
-            Mode with which to compute the bin-edges.
-
-            -   ``'equal'``: each bin has equal width.
-            -   ``'log'``: logarithmic spacing.
-            -   ``'uniform'``: uniform number of data-points per bin.
-            -   ``'voronoi'``: each bin is the region between two adjacent data-points.
-
-        :param min_count: Minimum number of data-points per bin.
-        :param min_width: Minimum width of a bin.
-
-        :param integer:
-            If ``True``, bins not encompassing an integer are removed
-            (e.g. a bin with edges ``[1.1, 1.9]`` is removed, but ``[0.9, 1.1]`` is not removed).
-
-        :param bin_edges: Specify the bin-edges (overrides ``bins`` and ``mode``).
-
-        :param bound_error: What to do if a sample falls out of the bin range:
-
-            - ``"raise"``: raise an error
-            - ``"ignore"``: ignore the data that are out of range
-            - ``"norm"``: change the normalisation of the density
-
+        :param kwargs: Automatic binning settings, see :py:meth:`histogram.from_data`.
         :return: The :py:class:`Histogram` object.
         """
 
-        hist = histogram.from_data(args[0], bins, mode, min_count, min_width, integer, bin_edges)
-        return cls(hist.bin_edges, right=hist.right, bound_error=bound_error).add_sample(*args)
+        hist = histogram.from_data(args[0], **kwargs)
+        return cls(hist.bin_edges, right=hist.right, bound_error=hist.bound_error).add_sample(*args)
 
     def __iter__(self):
         return iter(self.data)
@@ -861,41 +830,21 @@ class binned:
 
         :param args:
             Different variables of data to add.
-            The binning is done on the first variable and applied to all other variables.
+            The binning is done on the first argument and applied to all other arguments.
         """
 
         if len(args) == 0:
             raise ValueError("No data given")
 
         for i in range(len(args) - len(self.data)):
-            self.data.append(static(shape=self.bin_edges.size - 1))
+            self.data.append(static(shape=self.hist.bin_edges.size - 1))
 
-        data = np.asarray(args[0])
-        shape = data.shape
-        bin = np.digitize(data, self.bin_edges, right=self.right) - 1
-        left = data < self.bin_edges[0]
-        right = data >= self.bin_edges[-1]
-        nleft = np.sum(left)
-        nright = np.sum(right)
-        self.count_left += nleft
-        self.count_right += nright
-
-        if nleft:
-            self.bound_left = min([self.bound_left, np.min(data[left])])
-
-        if nright:
-            self.bound_right = max([self.bound_right, np.max(data[right])])
-
-        if self.bound_error == "raise" and (nleft or nright):
-            raise ValueError("Data out of bin range")
-
-        keep = np.logical_and(~left, ~right)
-        bin = bin[keep]
+        bin, keep = self.hist._get_bins(args[0], return_selector=True)
         args = [np.asarray(arg)[keep] for arg in args]
         sqr = [arg * arg for arg in args]
 
         for arg in args:
-            if arg.shape != shape:
+            if arg.shape != args[0].shape:
                 raise ValueError("All arguments must have the same shape")
 
         for ibin in range(np.max(bin) + 1):
