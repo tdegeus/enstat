@@ -440,6 +440,9 @@ class histogram:
         self.bound_right = bin_edges[-1]
         self.count = np.zeros((len(bin_edges) - 1), np.uint64)
 
+        if bound_error not in {"raise", "ignore", "norm"}:
+            raise ValueError(f"Unknown bound_error: {bound_error}")
+
     def __iter__(self):
         yield "bin_edges", self.bin_edges
         yield "count", self.count
@@ -706,9 +709,8 @@ class histogram:
 
         data = np.asarray(data)
         bin = np.digitize(data, self.bin_edges, right=self.right) - 1
-
-        left = bin < 0
-        right = bin >= self.count.size
+        left = data < self.bin_edges[0]
+        right = data >= self.bin_edges[-1]
         nleft = np.sum(left)
         nright = np.sum(right)
         self.count_left += nleft
@@ -764,6 +766,148 @@ class histogram:
         """
 
         return (self.x, self.density)
+
+
+class binned:
+    """
+    Ensemble average after binning.
+
+    :param bin_edges: The bin-edges.
+    :param right: Whether the bin includes the right edge (or the left edge) see numpy.digitize.
+    :param bound_error: What to do if a sample falls out of the bin range:
+
+        - ``"raise"``: raise an error
+        - ``"ignore"``: ignore the data that are out of range
+    """
+
+    def __init__(self, bin_edges: ArrayLike, right: bool = False, bound_error: str = "raise"):
+        self.data = []
+        self.right = right
+        self.bin_edges = bin_edges
+        self.bound_error = bound_error
+        self.count_left = 0
+        self.count_right = 0
+        self.bound_left = bin_edges[0]
+        self.bound_right = bin_edges[-1]
+
+        if bound_error not in {"raise", "ignore"}:
+            raise ValueError(f"Unknown bound_error: {bound_error}")
+
+    @classmethod
+    def from_data(
+        cls,
+        *args: ArrayLike,
+        bins: int = None,
+        mode: str = "equal",
+        min_count: int = None,
+        min_width: float = None,
+        integer: bool = False,
+        bin_edges: ArrayLike = None,
+        bound_error: str = "raise",
+    ):
+        r"""
+        Construct from data.
+
+        :param args:
+            Different variables of data to add.
+            The binning is done on the first variable and applied to all other variables.
+
+        :param bins: Number of bins.
+        :param mode:
+            Mode with which to compute the bin-edges.
+
+            -   ``'equal'``: each bin has equal width.
+            -   ``'log'``: logarithmic spacing.
+            -   ``'uniform'``: uniform number of data-points per bin.
+            -   ``'voronoi'``: each bin is the region between two adjacent data-points.
+
+        :param min_count: Minimum number of data-points per bin.
+        :param min_width: Minimum width of a bin.
+
+        :param integer:
+            If ``True``, bins not encompassing an integer are removed
+            (e.g. a bin with edges ``[1.1, 1.9]`` is removed, but ``[0.9, 1.1]`` is not removed).
+
+        :param bin_edges: Specify the bin-edges (overrides ``bins`` and ``mode``).
+
+        :param bound_error: What to do if a sample falls out of the bin range:
+
+            - ``"raise"``: raise an error
+            - ``"ignore"``: ignore the data that are out of range
+            - ``"norm"``: change the normalisation of the density
+
+        :return: The :py:class:`Histogram` object.
+        """
+
+        hist = histogram.from_data(args[0], bins, mode, min_count, min_width, integer, bin_edges)
+        return cls(hist.bin_edges, right=hist.right, bound_error=bound_error).add_sample(*args)
+
+    def __iter__(self):
+        return iter(self.data)
+
+    def __getitem__(self, index: int):
+        if hasattr(index, "__len__"):
+            raise ValueError("Multi-dimensional indexing is not supported")
+        return self.data[index]
+
+    def __add__(self, data: ArrayLike):
+        self.add_sample(data)
+        return self
+
+    def add_sample(self, *args: ArrayLike):
+        """
+        Add a sample.
+        If you use only one variable, you can also use the ``+`` operator.
+
+        :param args:
+            Different variables of data to add.
+            The binning is done on the first variable and applied to all other variables.
+        """
+
+        if len(args) == 0:
+            raise ValueError("No data given")
+
+        for i in range(len(args) - len(self.data)):
+            self.data.append(static(shape=self.bin_edges.size - 1))
+
+        data = np.asarray(args[0])
+        shape = data.shape
+        bin = np.digitize(data, self.bin_edges, right=self.right) - 1
+        left = data < self.bin_edges[0]
+        right = data >= self.bin_edges[-1]
+        nleft = np.sum(left)
+        nright = np.sum(right)
+        self.count_left += nleft
+        self.count_right += nright
+
+        if nleft:
+            self.bound_left = min([self.bound_left, np.min(data[left])])
+
+        if nright:
+            self.bound_right = max([self.bound_right, np.max(data[right])])
+
+        if self.bound_error == "raise" and (nleft or nright):
+            raise ValueError("Data out of bin range")
+
+        keep = np.logical_and(~left, ~right)
+        bin = bin[keep]
+        args = [np.asarray(arg)[keep] for arg in args]
+        sqr = [arg * arg for arg in args]
+
+        for arg in args:
+            if arg.shape != shape:
+                raise ValueError("All arguments must have the same shape")
+
+        for ibin in range(np.max(bin) + 1):
+            sel = bin == ibin
+            if not np.any(sel):
+                continue
+            for i in range(len(args)):
+                self.data[i].first[ibin] += np.sum(args[i][sel])
+                self.data[i].second[ibin] += np.sum(sqr[i][sel])
+                self.data[i].norm[ibin] += np.sum(sel)
+
+        return self
 
 
 if __name__ == "__main__":
