@@ -28,7 +28,7 @@ class Test_mean(unittest.TestCase):
         self.assertFalse(np.isnan(average.mean()))
         self.assertFalse(np.isnan(average.std()))
 
-    def test_scalar_division(self):
+    def test_scalar_zero_division(self):
         """
         Check for zero division.
         """
@@ -42,6 +42,42 @@ class Test_mean(unittest.TestCase):
 
         self.assertTrue(np.isclose(average.mean(), np.mean(a)))
         self.assertTrue(np.isclose(average.std(), np.std(a), rtol=1e-3))
+
+    def test_scalar_units_div(self):
+        """
+        Change units.
+        """
+
+        average = enstat.scalar()
+
+        a = np.random.random(50 * 20).reshape(50, 20)
+        factor = np.random.random() + 0.1
+        aprime = a / factor
+
+        for i in range(a.shape[0]):
+            average += a[i, :]
+
+        average /= factor
+        self.assertTrue(np.isclose(average.mean(), np.mean(aprime)))
+        self.assertTrue(np.isclose(average.std(), np.std(aprime), rtol=1e-3))
+
+    def test_scalar_units_mul(self):
+        """
+        Change units.
+        """
+
+        average = enstat.scalar()
+
+        a = np.random.random(50 * 20).reshape(50, 20)
+        factor = np.random.random() + 0.1
+        aprime = a * factor
+
+        for i in range(a.shape[0]):
+            average += a[i, :]
+
+        average *= factor
+        self.assertTrue(np.isclose(average.mean(), np.mean(aprime)))
+        self.assertTrue(np.isclose(average.std(), np.std(aprime), rtol=1e-3))
 
     def test_static(self):
         """
@@ -57,6 +93,48 @@ class Test_mean(unittest.TestCase):
 
         self.assertTrue(np.allclose(average.mean(), np.mean(a, axis=0)))
         self.assertTrue(np.allclose(average.std(), np.std(a, axis=0), rtol=5e-1, atol=1e-3))
+        self.assertTrue(average.shape == a.shape[1:])
+        self.assertTrue(average.size == np.prod(a.shape[1:]))
+
+    def test_static_units_div(self):
+        """
+        Change units.
+        """
+
+        average = enstat.static()
+
+        a = np.random.random(35 * 50 * 20).reshape(35, 50, 20)
+        factor = np.random.random() + 0.1
+        aprime = a / factor
+
+        for i in range(a.shape[0]):
+            average += a[i, :, :]
+
+        average /= factor
+
+        self.assertTrue(np.allclose(average.mean(), np.mean(aprime, axis=0)))
+        self.assertTrue(np.allclose(average.std(), np.std(aprime, axis=0), rtol=5e-1, atol=1e-3))
+        self.assertTrue(average.shape == a.shape[1:])
+        self.assertTrue(average.size == np.prod(a.shape[1:]))
+
+    def test_static_units_mul(self):
+        """
+        Change units.
+        """
+
+        average = enstat.static()
+
+        a = np.random.random(35 * 50 * 20).reshape(35, 50, 20)
+        factor = np.random.random() + 0.1
+        aprime = a * factor
+
+        for i in range(a.shape[0]):
+            average += a[i, :, :]
+
+        average *= factor
+
+        self.assertTrue(np.allclose(average.mean(), np.mean(aprime, axis=0)))
+        self.assertTrue(np.allclose(average.std(), np.std(aprime, axis=0), rtol=5e-1, atol=1e-3))
         self.assertTrue(average.shape == a.shape[1:])
         self.assertTrue(average.size == np.prod(a.shape[1:]))
 

@@ -48,11 +48,23 @@ class scalar:
         ret.norm = norm
         return ret
 
-    def __add__(self, datum: float):
+    def __add__(self, datum: float | ArrayLike):
         self.add_sample(datum)
         return self
 
-    def add_sample(self, datum: float):
+    def __itruediv__(self, factor: float):
+        assert not hasattr(factor, "__len__")
+        self.first /= factor
+        self.second /= factor**2
+        return self
+
+    def __imul__(self, factor: float):
+        assert not hasattr(factor, "__len__")
+        self.first *= factor
+        self.second *= factor**2
+        return self
+
+    def add_sample(self, datum: float | ArrayLike):
         """
         Add a sample.
         Internally changes the sums of the first and second statistical moments and normalisation.
@@ -228,6 +240,22 @@ class static:
 
     def __add__(self, data: ArrayLike):
         self.add_sample(data)
+        return self
+
+    def __itruediv__(self, factor: float | ArrayLike):
+        if hasattr(factor, "__len__"):
+            assert factor.shape == self.first.shape
+        self.first /= factor
+        if self.second is not None:
+            self.second /= factor**2
+        return self
+
+    def __imul__(self, factor: float | ArrayLike):
+        if hasattr(factor, "__len__"):
+            assert factor.shape == self.first.shape
+        self.first *= factor
+        if self.second is not None:
+            self.second *= factor**2
         return self
 
     def add_sample(self, data: ArrayLike, mask: ArrayLike = None):
