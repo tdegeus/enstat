@@ -12,6 +12,7 @@ Summary
     enstat.static
     enstat.dynamic1d
     enstat.histogram
+    enstat.binned
 
 scalar
 ------
@@ -44,6 +45,15 @@ histogram
 ---------
 
 .. autoclass:: enstat.histogram
+   :members:
+   :undoc-members:
+   :show-inheritance:
+   :inherited-members:
+
+binned
+------
+
+.. autoclass:: enstat.binned
    :members:
    :undoc-members:
    :show-inheritance:
