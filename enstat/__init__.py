@@ -925,10 +925,8 @@ class binned:
             if arg.shape != kwargs[self.names[0]].shape:
                 raise ValueError("All arguments must have the same shape")
 
-        for ibin in range(np.max(bin) + 1):
+        for ibin in np.argwhere(np.bincount(bin) > 0).flatten():
             sel = bin == ibin
-            if not np.any(sel):
-                continue
             for name, arg in kwargs.items():
                 self.data[name].first[ibin] += np.sum(kwargs[name][sel])
                 self.data[name].second[ibin] += np.sum(sqr[name][sel])
