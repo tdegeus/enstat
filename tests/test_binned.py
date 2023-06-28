@@ -1,3 +1,4 @@
+import time
 import unittest
 
 import numpy as np
@@ -10,11 +11,24 @@ class Test_binned(unittest.TestCase):
     Binned data.
     """
 
+    def test_manual(self):
+        x = 0.5
+        y = 1
+        bin_edges = np.array([0, 1])
+        binned = enstat.binned.from_data(x, y, bin_edges=bin_edges)
+        self.assertTrue(np.allclose(binned[1].mean(), np.array([1])))
+
+        x = np.array([0.5, 1.5, 2.5])
+        y = np.array([1, 2, 3])
+        bin_edges = np.array([0, 1, 2, 3])
+        binned = enstat.binned.from_data(x, y, bin_edges=bin_edges)
+        self.assertTrue(np.allclose(binned[1].mean(), np.array([1, 2, 3])))
+
     def test_simple(self):
         """
         Plain data, one variables.
         """
-        x = np.random.random([1234])
+        x = np.random.random(1234)
 
         bin_edges = np.linspace(0, 1, 13)
 
@@ -42,7 +56,7 @@ class Test_binned(unittest.TestCase):
         """
         Plain data, three variables.
         """
-        x = np.random.random([1234])
+        x = np.random.random(1234)
         y = np.random.random(x.shape)
         z = np.random.random(x.shape)
 
@@ -153,6 +167,56 @@ class Test_binned(unittest.TestCase):
         self.assertTrue(np.allclose(binned["y"].mean(), ymean))
         self.assertTrue(np.allclose(binned["x"].std(), xerr, rtol=1e-2, atol=1e-5))
         self.assertTrue(np.allclose(binned["y"].std(), yerr, rtol=1e-2, atol=1e-5))
+
+    def test_time_efficiency(self):
+        """
+        Test efficiency of implementation of ``binned``.
+        """
+        bin_edges = np.linspace(0, 100000, 10000)
+
+        a = np.random.random(int(bin_edges[-1])) * bin_edges[-1]
+        bin = np.digitize(a, bin_edges) - 1
+
+        tic = time.time()
+        r0 = np.zeros(bin_edges.size - 1)
+        for ibin in range(np.max(bin) + 1):
+            sel = bin == ibin
+            r0[ibin] = np.sum(a[sel])
+        t0 = time.time() - tic
+
+        tic = time.time()
+        r1 = np.zeros(bin_edges.size - 1)
+        for ibin in np.argwhere(np.bincount(bin) > 0).flatten():
+            sel = bin == ibin
+            r1[ibin] = np.sum(a[sel])
+        t1 = time.time() - tic
+        self.assertTrue(np.allclose(r0, r1))
+        self.assertTrue(np.isclose(t0, t1, rtol=1e-1, atol=1e-1))
+
+        a = np.random.normal(
+            size=int(bin_edges[-1]), loc=bin_edges[-1] / 2, scale=bin_edges[-1] / 100
+        )
+        bin = np.digitize(a, bin_edges) - 1
+
+        tic = time.time()
+        r0 = np.zeros(bin_edges.size - 1)
+        for ibin in range(np.max(bin) + 1):
+            sel = bin == ibin
+            r0[ibin] = np.sum(a[sel])
+        t0 = time.time() - tic
+
+        tic = time.time()
+        r1 = np.zeros(bin_edges.size - 1)
+        for ibin in np.argwhere(np.bincount(bin) > 0).flatten():
+            sel = bin == ibin
+            r1[ibin] = np.sum(a[sel])
+        t1 = time.time() - tic
+
+        self.assertTrue(np.allclose(r0, r1))
+        self.assertLess(t1, t0)
+
+        b = enstat.binned.from_data(a, bin_edges=bin_edges, names=["x"])
+        self.assertTrue(np.allclose(r0, b["x"].first))
 
 
 if __name__ == "__main__":
