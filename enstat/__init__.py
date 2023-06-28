@@ -358,6 +358,38 @@ class static:
 
         return np.sqrt(self.variance(min_norm))
 
+    def squash(self, n: int | list[int]):
+        """
+        Squash the data to a smaller size by summing over blocks of size ``n``.
+        For example, suppose that::
+
+            >>> avg.norm
+            [[2, 2, 3, 1, 1],
+             [2, 2, 1, 1, 3],
+             [1, 1, 2, 2, 1],
+             [2, 1, 2, 2, 2]]
+
+        Then calling::
+
+            >>> avg.squash(2)
+            >>> avg.norm
+            [[8, 6, 4],
+             [5, 8, 3]]
+        """
+        assert self.norm is not None, "no data yet"
+
+        if not hasattr(n, "__len__"):
+            n = [n]
+
+        assert self.norm.ndim == len(n)
+
+        for i in range(len(n)):
+            iter = np.arange(0, self.norm.shape[i], n[i])
+            self.norm = np.add.reduceat(self.norm, iter, axis=i)
+            self.first = np.add.reduceat(self.first, iter, axis=i)
+            if self.compute_variance:
+                self.second = np.add.reduceat(self.second, iter, axis=i)
+
 
 def _expand_array1d(data, size):
     tmp = np.zeros((size), data.dtype)
