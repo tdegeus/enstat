@@ -625,8 +625,9 @@ class histogram:
         if integer:
             bin_edges = detail.histogram_bin_edges_integer(bin_edges)
 
-        bin_edges[0] = np.nextafter(bin_edges[0], data.min() - (data.max() - data.min()))
-        bin_edges[-1] = np.nextafter(bin_edges[-1], data.max() + (data.max() - data.min()))
+        d = bin_edges[-1] - bin_edges[0]
+        bin_edges[0] = np.nextafter(bin_edges[0], bin_edges[0] - d)
+        bin_edges[-1] = np.nextafter(bin_edges[-1], bin_edges[-1] + d)
         return cls(bin_edges, right=True, bound_error=bound_error).add_sample(data)
 
     def strip(self, min_count: int = 0):
