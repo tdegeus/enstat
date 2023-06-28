@@ -62,9 +62,7 @@ class Test_norm(unittest.TestCase):
     def test_mid(self):
         bin_edges = [-0.5, 0.5, 1.5, 2.5]
         mid = [0, 1, 2]
-
         hist = enstat.histogram(bin_edges=bin_edges)
-
         self.assertEqual(mid, hist.x.tolist())
 
 
