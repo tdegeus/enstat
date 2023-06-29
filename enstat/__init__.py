@@ -13,13 +13,28 @@ from ._version import version_tuple  # noqa: F401
 class scalar:
     r"""
     Ensemble average of a scalar.
-    Add samples to it using :py:func:`scalar.add_sample`.
+    Example:
+
+    .. code-block:: python
+
+        import enstat
+
+        average = enstat.scalar()
+        average += 1.0
+        average += 2.0
+        average += 3.0
+        print(average.mean())  # 2.0
+
+    Add samples to it using :py:func:`scalar.add_sample`, or simply `average += datum`.
     The mean, variance, and standard deviation can be obtained at any time.
     They are derived from the following members:
 
     *   :py:attr:`scalar.first`: Sum of the first statistical moment.
     *   :py:attr:`scalar.second`: Sum of the second statistical moment.
     *   :py:attr:`scalar.norm`: Number of samples.
+
+    To restore data: use :py:func:`scalar.restore`.
+    In short: `restored = enstat.scalar.restore(**dict(average))`.
     """
 
     def __init__(self):
@@ -120,7 +135,19 @@ class scalar:
 class static:
     r"""
     Ensemble average of an nd-array (of same size for all samples).
-    Add samples to it using :py:func:`static.add_sample`.
+    .. code-block:: python
+
+        import enstat
+        import numpy as np
+
+        data = np.random.random(35 * 50).reshape(35, 50)
+
+        average = enstat.static()
+        for datum in data:
+            average += datum
+        print(average.mean())  # approximately [0.5, 0.5, ...]
+
+    Add samples to it using :py:func:`static.add_sample`, or simply `average += datum`.
     The mean, variance, and standard deviation can be obtained at any time.
     They are derived from the following members:
 
@@ -128,7 +155,10 @@ class static:
     *   :py:attr:`static.second`: Sum of the second statistical moment.
     *   :py:attr:`static.norm`: Number of samples.
 
-    Furthermore, the following members are available:
+    To restore data: use :py:func:`static.restore`.
+    In short: `restored = enstat.static.restore(**dict(average))`.
+
+    For convenience, the following members are available:
 
     *   :py:attr:`static.shape`: Shape of the data.
     *   :py:attr:`static.size`: Size of the data (= prod(shape)).
@@ -400,12 +430,13 @@ def _expand_array1d(data, size):
 class dynamic1d(static):
     r"""
     Ensemble average of an 1d-array (which grows depending of the size of the samples).
-    Add samples to it using :py:func:`dynamic1d.add_sample`.
+    Add samples to it using :py:func:`dynamic1d.add_sample`, or simply `average += datum`.
     The mean, variance, and standard deviation can be obtained at any time.
     Also the sums of the first and statistical moments, as well as the number of samples can be
     obtained at any time.
 
-    Continue an old average by specifying:
+    To restore data: use :py:func:`dynamic1d.restore`.
+    In short: `restored = enstat.dynamic1d.restore(**dict(average))`.
 
     :param compute_variance:
         If set ``False`` no second moment will be computed.
@@ -472,7 +503,40 @@ class dynamic1d(static):
 class histogram:
     """
     Histogram.
-    One can add samples to it using :py:func:`Histogram.add_sample`.
+    Example single dataset:
+
+    .. code-block:: python
+
+        data = [0, 0, 0, 1, 1, 2]
+        bin_edges = [-0.5, 0.5, 1.5, 2.5]
+        hist = enstat.histogram.from_data(data, bin_edges)
+        print(hist.count)
+
+    Example ensemble:
+
+    .. code-block:: python
+
+        data = np.random.random(35 * 50).reshape(35, 50)
+        bin_edges = np.linspace(0, 1, 11)
+        hist = enstat.histogram(bin_edges)
+
+        for datum in data:
+            hist += datum
+
+        print(hist.count)
+
+    One can add samples to it using :py:func:`Histogram.add_sample`, or simply `hist += datum`.
+
+    Members:
+
+    *   :py:attr:`scalar.count`: The number of samples in each bin.
+    *   :py:attr:`scalar.bin_edges`: See option ``bin_edges``.
+    *   :py:attr:`scalar.x`: Midpoint of each bin.
+    *   :py:attr:`scalar.p`: Probability density of each bin.
+    *   :py:attr:`scalar.right`: See option ``right``.
+    *   :py:attr:`scalar.bound_error`: See option ``bound_error``
+    *   :py:attr:`scalar.count_left`: Number of samples that fall below the leftmost bin.
+    *   :py:attr:`scalar.count_right`: Number of samples that fall above the rightmost bin.
 
     :param bin_edges: The bin-edges.
     :param right: Whether the bin includes the right edge (or the left edge) see numpy.digitize.
@@ -804,7 +868,6 @@ class histogram:
         """
         The bin centers.
         """
-
         return 0.5 * (self.bin_edges[:-1] + self.bin_edges[1:])
 
     @property
@@ -812,7 +875,6 @@ class histogram:
         """
         The probability density function at the bin.
         """
-
         count = self.count.astype(np.float64)
         norm = np.sum(count)
 
@@ -826,7 +888,6 @@ class histogram:
         """
         The probability density function at the bin.
         """
-
         return self.density
 
     @property
@@ -834,13 +895,24 @@ class histogram:
         """
         Alias for ``(x, density)``.
         """
-
         return (self.x, self.density)
 
 
 class binned:
     """
     Ensemble average after binning.
+    Example:
+
+    .. code-block:: python
+
+        import numpy as np
+        import enstat
+
+        x = np.array([0.5, 1.5, 2.5])
+        y = np.array([1, 2, 3])
+        bin_edges = np.array([0, 1, 2, 3])
+        binned = enstat.binned.from_data(x, y, bin_edges=bin_edges)
+        print(binned[0].mean())
 
     :param bin_edges: The bin-edges.
     :param right: Whether the bin includes the right edge (or the left edge) see numpy.digitize.

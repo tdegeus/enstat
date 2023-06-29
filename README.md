@@ -7,16 +7,25 @@
 
 Documentation: [enstat.readthedocs.io](https://enstat.readthedocs.io)
 
-## Overview
+## Hallmark feature
 
-*enstat* is a library to facilitate the computation of ensemble averages (and their variances) or histograms.
+*enstat* is a library to facilitate the computation of
 
-The key feature is that a class stores the sum of the first and second statistical moments and the number of samples.
-This gives access to the mean (and variance) at all times, while you can keep adding samples.
+*   [Ensemble averages (and their variance)](#readme-average);
+*   [Ensemble averages (and their variance) based on a certain binning of a quantity](#readme-binned);
+*   [Histograms of an ensemble](#readme-histogram).
 
-For the histogram something similar holds, but this time the count per bin is stored.
+**without storing the entire ensemble in memory**.
 
-### Ensemble average
+> Below you find a quick-start.
+> For more information, see the [documentation](https://enstat.readthedocs.io).
+
+<div id="readme-average"></div>
+
+## Ensemble average
+
+> The key feature is to store the sum of the first and second statistical moments and the number of samples.
+> This gives access to the mean (and variance) at all times, while you can keep adding samples.
 
 Suppose that we have 100 realisations, each with 1000 'blocks', and we want to know the ensemble average of each block:
 
@@ -27,7 +36,6 @@ import numpy as np
 ensemble = enstat.static()
 
 for realisation in range(100):
-
     sample = np.random.random(1000)
     ensemble += sample
 
@@ -35,6 +43,7 @@ print(ensemble.mean())
 ```
 
 which will print a list of 1000 values, each around `0.5`.
+
 This is the equivalent of
 
 ```python
@@ -42,7 +51,6 @@ import numpy as np
 
 container = np.empty((100, 1000))
 
-for realisation in range(100):
 
     sample = np.random.random(1000)
     container[realisation, :] = sample
@@ -56,7 +64,9 @@ Instead the solution with the container uses much more memory.
 A nice feature is also that you can keep adding samples to `ensemble`.
 You can even store it and continue later.
 
-### Ensemble histogram
+<div id="readme-histogram"></div>
+
+## Ensemble histogram
 
 Same example, but now we want the histogram for predefined bins:
 ```python
@@ -67,7 +77,6 @@ bin_edges = np.linspace(0, 1, 11)
 hist = enstat.histogram(bin_edges=bin_edges)
 
 for realisation in range(100):
-
     sample = np.random.random(1000)
     hist += sample
 
@@ -96,6 +105,26 @@ The `histogram` class contains two additional nice features.
     ```
 
     You can even use `ax.plot(*hist.plot)`.
+
+<div id="readme-binned"></div>
+
+## Average per bin
+
+Suppose you have some time series (`t`) with multiple observables (`a` and `b`); e.g.;
+```python
+import enstat
+import numpy as np
+
+t = np.linspace(0, 10, 100)
+a = np.random.normal(loc=5, scale=0.1, size=t.size)
+b = np.random.normal(loc=1, scale=0.5, size=t.size)
+```
+Now suppose that you want to compute the average `a`, `b`, and `t` based on a certain binning of `t`:
+```python
+bin_edges = np.linspace(0, 12, 12)
+binned = enstat.binned.from_data(t, a, b, names=["t", "a", "b"]m bin_edges=bin_edges)
+print(binned["a"].mean())
+```
 
 ## Installation
 

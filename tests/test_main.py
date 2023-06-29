@@ -17,16 +17,18 @@ class Test_mean(unittest.TestCase):
         """
 
         average = enstat.scalar()
-
-        average += np.array(1.0)
+        average += 1.0
 
         self.assertFalse(np.isnan(average.mean()))
         self.assertTrue(np.isnan(average.std()))
+        self.assertAlmostEqual(average.mean(), 1.0)
 
         average += np.array(1.0)
 
         self.assertFalse(np.isnan(average.mean()))
         self.assertFalse(np.isnan(average.std()))
+        self.assertAlmostEqual(average.mean(), 1.0)
+        self.assertAlmostEqual(average.std(), 0.0)
 
     def test_scalar_zero_division(self):
         """
