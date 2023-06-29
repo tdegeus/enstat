@@ -59,8 +59,8 @@ class Test_binned(unittest.TestCase):
         Plain data, one variables.
         """
         x = np.random.random(1234)
-
         bin_edges = np.linspace(0, 1, 13)
+        binned = enstat.binned.from_data(x, bin_edges=bin_edges)
 
         bin = np.digitize(x.ravel(), bin_edges) - 1
         n = bin_edges.size - 1
@@ -77,8 +77,6 @@ class Test_binned(unittest.TestCase):
             xmean[ibin] = np.mean(xi)
             xerr[ibin] = np.std(xi)
 
-        binned = enstat.binned.from_data(x, bin_edges=bin_edges)
-
         self.assertTrue(np.allclose(binned[0].mean(), xmean))
         self.assertTrue(np.allclose(binned[0].std(), xerr, rtol=1e-2, atol=1e-5))
 
@@ -89,8 +87,8 @@ class Test_binned(unittest.TestCase):
         x = np.random.random(1234)
         y = np.random.random(x.shape)
         z = np.random.random(x.shape)
-
         bin_edges = np.linspace(0, 1, 13)
+        binned = enstat.binned.from_data(x, y, z, names=["x", "y", "z"], bin_edges=bin_edges)
 
         bin = np.digitize(x.ravel(), bin_edges) - 1
         n = bin_edges.size - 1
@@ -117,8 +115,6 @@ class Test_binned(unittest.TestCase):
             yerr[ibin] = np.std(yi)
             zerr[ibin] = np.std(zi)
 
-        binned = enstat.binned.from_data(x, y, z, names=["x", "y", "z"], bin_edges=bin_edges)
-
         self.assertTrue(np.allclose(binned["x"].mean(), xmean))
         self.assertTrue(np.allclose(binned["y"].mean(), ymean))
         self.assertTrue(np.allclose(binned["z"].mean(), zmean))
@@ -130,9 +126,14 @@ class Test_binned(unittest.TestCase):
         """
         Ensemble data, two variables.
         """
-        x = np.random.random([123, 10])
+        x = np.random.random([123, 11])
         y = np.random.random(x.shape)
         bin_edges = np.linspace(0, 1, 13)
+
+        binned = enstat.binned(bin_edges)
+        for i in range(x.shape[0]):
+            binned.add_sample(x[i, :], y[i, :])
+
         bin = np.digitize(x.ravel(), bin_edges) - 1
         n = bin_edges.size - 1
 
@@ -152,10 +153,6 @@ class Test_binned(unittest.TestCase):
             ymean[ibin] = np.mean(yi)
             xerr[ibin] = np.std(xi)
             yerr[ibin] = np.std(yi)
-
-        binned = enstat.binned(bin_edges)
-        for i in range(x.shape[0]):
-            binned.add_sample(x[i, :], y[i, :])
 
         self.assertTrue(np.allclose(binned[0].mean(), xmean))
         self.assertTrue(np.allclose(binned[1].mean(), ymean))
@@ -169,6 +166,10 @@ class Test_binned(unittest.TestCase):
         x = np.random.random([123, 10])
         y = np.random.random(x.shape)
         bin_edges = np.linspace(0, 1, 13)
+        binned = enstat.binned(bin_edges, names=["x", "y"])
+        for i in range(x.shape[0]):
+            binned.add_sample(y=y[i, :], x=x[i, :])
+
         bin = np.digitize(x.ravel(), bin_edges) - 1
         n = bin_edges.size - 1
 
@@ -188,10 +189,6 @@ class Test_binned(unittest.TestCase):
             ymean[ibin] = np.mean(yi)
             xerr[ibin] = np.std(xi)
             yerr[ibin] = np.std(yi)
-
-        binned = enstat.binned(bin_edges, names=["x", "y"])
-        for i in range(x.shape[0]):
-            binned.add_sample(y=y[i, :], x=x[i, :])
 
         self.assertTrue(np.allclose(binned["x"].mean(), xmean))
         self.assertTrue(np.allclose(binned["y"].mean(), ymean))
@@ -223,9 +220,9 @@ class Test_binned(unittest.TestCase):
         self.assertTrue(t0 / t1 < 2)
 
         tic = time.time()
-        b = enstat.binned.from_data(a, bin_edges=bin_edges, names=["x"])
+        b = enstat.binned.from_data(a, bin_edges=bin_edges)
         t2 = time.time() - tic
-        self.assertTrue(np.allclose(r0, b["x"].first))
+        self.assertTrue(np.allclose(r0, b[0].first))
         self.assertLess(t2, t0)
         self.assertLess(t2, t1)
 
@@ -257,9 +254,9 @@ class Test_binned(unittest.TestCase):
         self.assertLess(t1, t0)
 
         tic = time.time()
-        b = enstat.binned.from_data(a, bin_edges=bin_edges, names=["x"])
+        b = enstat.binned.from_data(a, bin_edges=bin_edges)
         t2 = time.time() - tic
-        self.assertTrue(np.allclose(r0, b["x"].first))
+        self.assertTrue(np.allclose(r0, b[0].first))
         self.assertLess(t2, t0)
         self.assertTrue(t2 < t1 or t2 / t1 < 1.3)
 
