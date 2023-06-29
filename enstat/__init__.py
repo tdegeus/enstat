@@ -998,6 +998,9 @@ class binned:
             if arg.shape != kwargs[self.names[0]].shape:
                 raise ValueError("All arguments must have the same shape")
 
+        if ibin.size == 0:
+            return self
+
         # see https://stackoverflow.com/q/76574134/2646505
         sorter = np.argsort(ibin)
         ibin = ibin[sorter]

@@ -54,6 +54,14 @@ class Test_binned(unittest.TestCase):
         notnan = np.array([False, False, True, False, True])
         binned = enstat.binned.from_data(x, y, bin_edges=bin_edges)
 
+    def test_bounds(self):
+        x = np.array([0.5, 1.5, 2.5, 4, 5, 6])
+        y = np.array([1, 2, 3, 1, 2, 3])
+        bin_edges = np.array([0, 1, 2, 3])
+        binned = enstat.binned.from_data(x, y, bin_edges=bin_edges, bound_error="ignore")
+        self.assertTrue(np.allclose(binned[0].mean(), np.array([0.5, 1.5, 2.5])))
+        self.assertTrue(np.allclose(binned[1].mean(), np.array([1, 2, 3])))
+
     def test_simple(self):
         """
         Plain data, one variables.
