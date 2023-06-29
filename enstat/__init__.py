@@ -918,7 +918,7 @@ class binned:
         if len(kwargs) != len(self.names):
             raise ValueError("Incorrect number of arguments")
 
-        bin, keep = self.hist._get_bins(kwargs[self.names[0]], return_selector=True)
+        ibin, keep = self.hist._get_bins(kwargs[self.names[0]], return_selector=True)
         kwargs = {name: np.asarray(arg)[keep] for name, arg in kwargs.items()}
         sqr = {name: arg * arg for name, arg in kwargs.items()}
 
@@ -926,12 +926,17 @@ class binned:
             if arg.shape != kwargs[self.names[0]].shape:
                 raise ValueError("All arguments must have the same shape")
 
-        for ibin in np.argwhere(np.bincount(bin) > 0).flatten():
-            sel = bin == ibin
-            for name, arg in kwargs.items():
-                self.data[name].first[ibin] += np.sum(kwargs[name][sel])
-                self.data[name].second[ibin] += np.sum(sqr[name][sel])
-                self.data[name].norm[ibin] += np.sum(sel)
+        sorter = np.argsort(ibin)
+        ibin = ibin[sorter]
+        norm = np.argwhere(np.diff(ibin, prepend=ibin[0], append=1)).flatten()
+        split = norm - 1
+        norm = np.diff(norm, prepend=0)
+        store = ibin[split]
+
+        for name, arg in kwargs.items():
+            self.data[name].first[store] += np.diff(np.cumsum(arg[sorter])[split], prepend=0)
+            self.data[name].second[store] += np.diff(np.cumsum(sqr[name][sorter])[split], prepend=0)
+            self.data[name].norm[store] += norm
 
         return self
 
