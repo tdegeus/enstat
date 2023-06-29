@@ -926,6 +926,7 @@ class binned:
             if arg.shape != kwargs[self.names[0]].shape:
                 raise ValueError("All arguments must have the same shape")
 
+        # see https://stackoverflow.com/q/76574134/2646505
         sorter = np.argsort(ibin)
         ibin = ibin[sorter]
         norm = np.argwhere(np.diff(ibin, prepend=ibin[0], append=1)).flatten()
