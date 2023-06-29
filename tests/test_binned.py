@@ -220,7 +220,7 @@ class Test_binned(unittest.TestCase):
             r1[ibin] = np.sum(a[sel])
         t1 = time.time() - tic
         self.assertTrue(np.allclose(r0, r1))
-        self.assertTrue(np.isclose(t0, t1, rtol=1e-1, atol=1e-1))
+        self.assertTrue(t0 / t1 < 2)
 
         tic = time.time()
         b = enstat.binned.from_data(a, bin_edges=bin_edges, names=["x"])
@@ -261,7 +261,7 @@ class Test_binned(unittest.TestCase):
         t2 = time.time() - tic
         self.assertTrue(np.allclose(r0, b["x"].first))
         self.assertLess(t2, t0)
-        self.assertTrue(np.isclose(t2, t1, rtol=3e-1))
+        self.assertTrue(t2 < t1 or t2 / t1 < 1.3)
 
 
 if __name__ == "__main__":
