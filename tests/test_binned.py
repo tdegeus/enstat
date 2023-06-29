@@ -22,7 +22,37 @@ class Test_binned(unittest.TestCase):
         y = np.array([1, 2, 3])
         bin_edges = np.array([0, 1, 2, 3])
         binned = enstat.binned.from_data(x, y, bin_edges=bin_edges)
+        self.assertTrue(np.allclose(binned[0].mean(), np.array([0.5, 1.5, 2.5])))
         self.assertTrue(np.allclose(binned[1].mean(), np.array([1, 2, 3])))
+
+        x = np.array([0.5, 2.5, 2.4, 2.6])
+        y = np.array([1, 3, 2, 4])
+        bin_edges = np.array([0, 1, 2, 3])
+        notnan = np.array([True, False, True])
+        binned = enstat.binned.from_data(x, y, bin_edges=bin_edges)
+        self.assertTrue(np.allclose(binned[0].mean()[notnan], np.array([0.5, np.nan, 2.5])[notnan]))
+        self.assertTrue(np.allclose(binned[1].mean()[notnan], np.array([1, np.nan, 3])[notnan]))
+
+        shuffle = np.random.permutation(x.size)
+        x = x[shuffle]
+        y = y[shuffle]
+        binned = enstat.binned.from_data(x, y, bin_edges=bin_edges)
+        self.assertTrue(np.allclose(binned[0].mean()[notnan], np.array([0.5, np.nan, 2.5])[notnan]))
+        self.assertTrue(np.allclose(binned[1].mean()[notnan], np.array([1, np.nan, 3])[notnan]))
+
+        x = np.array([1.5, 2.5, 2.4, 2.6])
+        y = np.array([1, 3, 2, 4])
+        bin_edges = np.array([0, 1, 2, 3])
+        notnan = np.array([False, True, True])
+        binned = enstat.binned.from_data(x, y, bin_edges=bin_edges)
+        self.assertTrue(np.allclose(binned[0].mean()[notnan], np.array([np.nan, 1.5, 2.5])[notnan]))
+        self.assertTrue(np.allclose(binned[1].mean()[notnan], np.array([np.nan, 1, 3])[notnan]))
+
+        x = np.array([2.5, 4.5])
+        y = np.array([1, 2])
+        bin_edges = np.array([0, 1, 2, 3, 4, 5])
+        notnan = np.array([False, False, True, False, True])
+        binned = enstat.binned.from_data(x, y, bin_edges=bin_edges)
 
     def test_simple(self):
         """
@@ -168,12 +198,11 @@ class Test_binned(unittest.TestCase):
         self.assertTrue(np.allclose(binned["x"].std(), xerr, rtol=1e-2, atol=1e-5))
         self.assertTrue(np.allclose(binned["y"].std(), yerr, rtol=1e-2, atol=1e-5))
 
-    def test_time_efficiency(self):
+    def test_time_efficiency_dense(self):
         """
         Test efficiency of implementation of ``binned``.
         """
         bin_edges = np.linspace(0, 100000, 10000)
-
         a = np.random.random(int(bin_edges[-1])) * bin_edges[-1]
         bin = np.digitize(a, bin_edges) - 1
 
@@ -193,6 +222,18 @@ class Test_binned(unittest.TestCase):
         self.assertTrue(np.allclose(r0, r1))
         self.assertTrue(np.isclose(t0, t1, rtol=1e-1, atol=1e-1))
 
+        tic = time.time()
+        b = enstat.binned.from_data(a, bin_edges=bin_edges, names=["x"])
+        t2 = time.time() - tic
+        self.assertTrue(np.allclose(r0, b["x"].first))
+        self.assertLess(t2, t0)
+        self.assertLess(t2, t1)
+
+    def test_time_efficiency_sparse(self):
+        """
+        Test efficiency of implementation of ``binned``.
+        """
+        bin_edges = np.linspace(0, 100000, 10000)
         a = np.random.normal(
             size=int(bin_edges[-1]), loc=bin_edges[-1] / 2, scale=bin_edges[-1] / 100
         )
@@ -215,8 +256,12 @@ class Test_binned(unittest.TestCase):
         self.assertTrue(np.allclose(r0, r1))
         self.assertLess(t1, t0)
 
+        tic = time.time()
         b = enstat.binned.from_data(a, bin_edges=bin_edges, names=["x"])
+        t2 = time.time() - tic
         self.assertTrue(np.allclose(r0, b["x"].first))
+        self.assertLess(t2, t0)
+        self.assertTrue(np.isclose(t2, t1, rtol=3e-1))
 
 
 if __name__ == "__main__":
