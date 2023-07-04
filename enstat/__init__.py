@@ -222,7 +222,7 @@ class static:
             if second is not None:
                 assert second.shape == norm.shape
 
-        ret = cls()
+        ret = cls(compute_variance=second is not None)
         ret.first = first
         ret.second = second
         ret.norm = norm
