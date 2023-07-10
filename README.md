@@ -9,25 +9,24 @@ Documentation: [enstat.readthedocs.io](https://enstat.readthedocs.io)
 
 ## Hallmark feature
 
-*enstat* is a library to facilitate the computation of
+*enstat* is a library to compute ensemble statistics **without storing the entire ensemble in memory**.
+In particular, it allows you to compute:
 
 *   [Ensemble averages (and their variance)](#readme-average);
 *   [Ensemble averages (and their variance) based on a certain binning of a quantity](#readme-binned);
 *   [Histograms of an ensemble](#readme-histogram).
 
-**without storing the entire ensemble in memory**.
-
-> Below you find a quick-start.
-> For more information, see the [documentation](https://enstat.readthedocs.io).
+Below you find a quick-start.
+For more information, see the [documentation](https://enstat.readthedocs.io).
 
 <div id="readme-average"></div>
 
 ## Ensemble average
 
-> The key feature is to store the sum of the first and second statistical moments and the number of samples.
-> This gives access to the mean (and variance) at all times, while you can keep adding samples.
+The key feature is to store the sum of the first and second statistical moments and the number of samples.
+This gives access to the mean (and variance) at all times, while you can keep adding samples.
 
-Suppose that we have 100 realisations, each with 1000 'blocks', and we want to know the ensemble average of each block:
+Suppose that we have 100 realisations, each with 1000 'items', and we want to know the ensemble average of each item:
 
 ```python
 import enstat
@@ -51,7 +50,7 @@ import numpy as np
 
 container = np.empty((100, 1000))
 
-
+for realisation in range(100):
     sample = np.random.random(1000)
     container[realisation, :] = sample
 
