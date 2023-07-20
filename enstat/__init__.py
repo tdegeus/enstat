@@ -35,12 +35,16 @@ class scalar:
 
     To restore data: use :py:func:`scalar.restore`.
     In short: `restored = enstat.scalar.restore(**dict(average))`.
+
+    :param dtype:
+        The type to use for the sum of the first (and second) statistical moment.
+        Tip: Python's ``int`` is unbounded, but e.g. ``np.int64`` is not.
     """
 
-    def __init__(self):
-        self.first = 0.0
-        self.second = 0.0
-        self.norm = 0.0
+    def __init__(self, dtype=float):
+        self.first = dtype(0)
+        self.second = dtype(0)
+        self.norm = int(0)
 
     def __iter__(self):
         yield "first", self.first
@@ -88,9 +92,9 @@ class scalar:
         """
 
         datum = np.array(datum)
-        self.first += np.sum(datum)
-        self.second += np.sum(datum**2)
-        self.norm += datum.size
+        self.first += type(self.first)(np.sum(datum))
+        self.second += type(self.second)(np.sum(datum**2))
+        self.norm += type(self.norm)(datum.size)
 
     def mean(self) -> float:
         r"""
@@ -103,7 +107,7 @@ class scalar:
         if self.norm == 0:
             return np.NaN
 
-        return self.first / self.norm
+        return self.first / float(self.norm)
 
     def variance(self) -> float:
         r"""
@@ -116,10 +120,9 @@ class scalar:
         if self.norm <= 1:
             return np.NaN
 
-        d = (self.second / self.norm - (self.first / self.norm) ** 2) * self.norm
-        n = self.norm - 1
-
-        return d / n
+        n = float(self.norm)
+        d = (self.second / n - (self.first / n) ** 2) * n
+        return d / (n - 1.0)
 
     def std(self) -> float:
         r"""
