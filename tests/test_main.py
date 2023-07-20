@@ -81,6 +81,13 @@ class Test_mean(unittest.TestCase):
         self.assertTrue(np.isclose(average.mean(), np.mean(aprime)))
         self.assertTrue(np.isclose(average.std(), np.std(aprime), rtol=1e-3))
 
+    def test_scalar_large(self):
+        v = int(np.iinfo(np.uint64).max)
+        data = [v * i for i in range(1000)]
+        average = enstat.scalar(dtype=int)
+        average += data
+        self.assertAlmostEqual(average.mean(), np.mean(data))
+
     def test_static(self):
         """
         Basic test of "mean" and "std" using a random sample.
