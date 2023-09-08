@@ -190,13 +190,8 @@ class static:
         self.first = None
         self.second = None
 
-        if shape is None:
-            return
-
-        self.norm = np.zeros(shape, np.int64)
-        self.first = np.zeros(shape, dtype)
-        if compute_variance:
-            self.second = np.zeros(shape, dtype)
+        if shape is not None:
+            self._allocate(shape, dtype)
 
     def __iter__(self):
         yield "first", self.first
