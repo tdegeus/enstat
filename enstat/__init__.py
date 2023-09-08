@@ -212,18 +212,11 @@ class static:
         :param second: Continued computation: Sum of the second moment.
         :param norm: Continued computation: Number of samples (integer).
         """
-
-        if norm is not None:
-            assert first is not None
-            assert first.shape == norm.shape
-
-            if second is not None:
-                assert second.shape == norm.shape
-
         ret = cls(compute_variance=second is not None)
         ret.first = first
         ret.second = second
         ret.norm = norm
+        ret._check_dimensions()
         return ret
 
     def _allocate(self, shape, dtype):
@@ -231,6 +224,16 @@ class static:
         self.first = np.zeros(shape, dtype)
         if self.compute_variance:
             self.second = np.zeros(shape, dtype)
+
+    def _check_dimensions(self):
+        if self.norm is not None:
+            assert self.first is not None
+            assert self.first.shape == self.norm.shape
+
+            if self.second is not None:
+                assert self.second.shape == self.norm.shape
+
+        return self
 
     @property
     def dtype(self):
